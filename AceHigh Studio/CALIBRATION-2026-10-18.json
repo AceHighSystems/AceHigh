@@ -1,0 +1,100 @@
+{
+  "fitted_period_s": 102.40091371920454,
+  "nominal_period_s": 102.4,
+  "captures": [
+    {
+      "complete_scans": 20000,
+      "rejected_scans": 0,
+      "fit_error_median": 0.42287413216595776,
+      "fit_error_max": 0.6828074020928683
+    },
+    {
+      "complete_scans": 19999,
+      "rejected_scans": 0,
+      "fit_error_median": 0.4557919883579291,
+      "fit_error_max": 7.087180607178968
+    },
+    {
+      "complete_scans": 20000,
+      "rejected_scans": 0,
+      "fit_error_median": 0.6363913306984029,
+      "fit_error_max": 1.341379632539086
+    }
+  ],
+  "stationary_holds": [
+    {
+      "start_index": 622,
+      "stop_index_exclusive": 2085,
+      "mean_deg": 61.22763355713428,
+      "rms_deg": 0.016761627776226057
+    },
+    {
+      "start_index": 2385,
+      "stop_index_exclusive": 4001,
+      "mean_deg": 52.307237738416454,
+      "rms_deg": 0.015304349499860204
+    },
+    {
+      "start_index": 4301,
+      "stop_index_exclusive": 5990,
+      "mean_deg": 44.2641949085469,
+      "rms_deg": 0.026325161305634295
+    },
+    {
+      "start_index": 6290,
+      "stop_index_exclusive": 7920,
+      "mean_deg": 38.16826226782131,
+      "rms_deg": 0.018924416668049848
+    },
+    {
+      "start_index": 8220,
+      "stop_index_exclusive": 9951,
+      "mean_deg": 27.951756959637045,
+      "rms_deg": 0.01369705035564938
+    },
+    {
+      "start_index": 10251,
+      "stop_index_exclusive": 11991,
+      "mean_deg": 16.515968874762457,
+      "rms_deg": 0.01466221579760885
+    },
+    {
+      "start_index": 12291,
+      "stop_index_exclusive": 14026,
+      "mean_deg": 3.410538576852101,
+      "rms_deg": 0.013330417355178646
+    },
+    {
+      "start_index": 14326,
+      "stop_index_exclusive": 16013,
+      "mean_deg": 351.06223431829426,
+      "rms_deg": 0.017664471030143607
+    },
+    {
+      "start_index": 16313,
+      "stop_index_exclusive": 19534,
+      "mean_deg": 332.75131539666097,
+      "rms_deg": 0.013234754852923282
+    },
+    {
+      "start_index": 19834,
+      "stop_index_exclusive": 20321,
+      "mean_deg": 310.38093508703594,
+      "rms_deg": 0.014263485855829818
+    }
+  ],
+  "limits": [
+    "Offline replay only; physical CAN/module operation has not been tested.",
+    "Motor speed and capture time supply the angle reference; no independent angle standard.",
+    "Sequential CAN reads and asynchronous PCAP updates limit dynamic reconstruction.",
+    "Specific to this assembly. Recalibrate after mechanical/settings changes."
+  ],
+  "standstill_rms_deg": 0.01464313953658873,
+  "standstill_peak_to_peak_deg": 0.12317419136516605,
+  "rotation_rms_about_speed_reference_deg": 0.1267611004206076,
+  "rotation_max_abs_about_speed_reference_deg": 0.5433096964407582,
+  "rotation_turns": 4.024533345203219,
+  "rotation_max_adjacent_change_deg": 0.7976371677232237,
+  "held_out_rotation_rms_deg": 0.12800589691181902,
+  "held_out_rotation_max_abs_deg": 0.5657989187515682
+}

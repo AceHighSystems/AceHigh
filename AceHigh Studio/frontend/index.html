@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AceHigh Studio</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.min.css"
+    >
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div>
+            <img class="brand-logo" src="/static/AceHigh-Logo-Master-Text-White-320-132.png" alt="AceHigh">
+            <div class="product">RANGER CONTROL</div>
+        </div>
+
+        <div class="connection">
+            <span id="connection-dot" class="dot"></span>
+            <span id="connection-text">Connecting...</span>
+        </div>
+    </header>
+
+    <main class="layout">
+        <aside class="sidebar">
+        <section class="panel controls">
+            <h2>Node control</h2>
+
+            <label>
+                Node ID
+                <input id="node-id" type="number" min="0" max="127" value="2">
+            </label>
+
+
+            <div id="status-line" class="status-line">Ready.</div>
+        </section>
+
+        <section class="panel terminal" aria-labelledby="terminal-title">
+            <div class="terminal-header">
+                <h2 id="terminal-title">Command terminal</h2>
+                <span id="terminal-node" class="terminal-badge">NODE 2</span>
+            </div>
+            <div id="terminal-output" class="terminal-output" role="log"
+                 aria-live="polite" aria-relevant="additions" tabindex="0"
+                 aria-label="Command history and replies"></div>
+            <form id="terminal-form" class="terminal-form" autocomplete="off">
+                <label class="sr-only" for="terminal-input">AceLight command</label>
+                <div class="terminal-entry">
+                    <span class="terminal-prompt" aria-hidden="true">&gt;</span>
+                    <input id="terminal-input" type="text" spellcheck="false"
+                           autocapitalize="off" maxlength="256"
+                           placeholder="write microstep 256" list="terminal-suggestions"
+                           aria-describedby="terminal-hint">
+                    <button id="terminal-send" type="submit">Send</button>
+                </div>
+                <datalist id="terminal-suggestions"></datalist>
+            </form>
+            <div class="terminal-footer">
+                <span id="terminal-hint">help · params · ↑↓ history</span>
+                <button id="terminal-clear" class="secondary" type="button">Clear</button>
+            </div>
+        </section>
+        </aside>
+
+        <section class="panel scope">
+            <div class="scope-header">
+                <div>
+                    <h2>Live scope</h2>
+                    <span class="subtle">Raw encoder channels ch0–ch13</span>
+                </div>
+
+                <div class="scope-actions">
+                    <button id="start-scope">Run</button>
+                    <button id="stop-scope" class="secondary">Stop</button>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" aria-label="Live Ranger measurements">
+                <section class="dashboard-card" id="angle-card" aria-labelledby="angle-title">
+                    <div class="dashboard-card-header">
+                        <h3 id="angle-title">Angle</h3>
+                        <span class="metric-state" id="angle-state">Ready</span>
+                    </div>
+                    <div class="angle-dial" id="angle-dial" role="img" aria-label="Angle awaiting data">
+                        <svg viewBox="0 0 240 240" aria-hidden="true">
+                            <circle class="dial-track" cx="120" cy="120" r="102"/>
+                            <g id="dial-ticks"></g>
+                            <text class="dial-label" x="120" y="35">0°</text>
+                            <text class="dial-label" x="207" y="124">90°</text>
+                            <text class="dial-label" x="120" y="213">180°</text>
+                            <text class="dial-label" x="34" y="124">270°</text>
+                            <g id="angle-needle" class="dial-needle">
+                                <path d="M120 40 L124 70 L116 70 Z"/>
+                                <circle cx="120" cy="23" r="4"/>
+                            </g>
+                        </svg>
+                        <div class="dial-reading"><strong id="angle-value">—</strong><span>DEGREES</span></div>
+                    </div>
+                    <div id="angle-source" class="angle-source">Computed from ch0–ch13</div>
+                </section>
+
+                <section class="dashboard-card" id="temperature-card" aria-labelledby="temperature-title">
+                    <div class="dashboard-card-header">
+                        <h3 id="temperature-title">Temperature</h3>
+                        <span class="metric-state" id="temperature-state">Ready</span>
+                    </div>
+                    <div class="dashboard-reading temperature-reading"><strong id="temperature-value">—</strong><span>°C</span></div>
+                    <div id="temperature-plot" class="dashboard-plot" aria-label="Temperature versus elapsed seconds"></div>
+                </section>
+
+                <section class="dashboard-card" id="power-card" aria-labelledby="power-title">
+                    <div class="dashboard-card-header">
+                        <h3 id="power-title">Voltage / current</h3>
+                        <span class="metric-state" id="power-state">Ready</span>
+                    </div>
+                    <div class="power-readings">
+                        <div class="dashboard-reading voltage-reading"><strong id="dashboard-voltage">—</strong><span>V</span></div>
+                        <div class="dashboard-reading current-reading"><strong id="dashboard-current">—</strong><span>A</span></div>
+                    </div>
+                    <div id="power-plot" class="dashboard-plot" aria-label="Voltage and current versus elapsed seconds, voltage left axis and current right axis"></div>
+                    <div class="power-legend"><span class="voltage-key">Voltage · left V</span><span class="current-key">Current · right A</span></div>
+                </section>
+            </div>
+
+            <div class="raw-scope-label">Raw encoder channels <span>ch0–ch13</span></div>
+            <div id="scope-grid" class="scope-grid"></div>
+        </section>
+    </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.iife.min.js">
+    </script>
+    <script src="/static/plot.js"></script>
+    <script src="/static/dashboard.js"></script>
+    <script src="/static/terminal.js"></script>
+    <script src="/static/app.js"></script>
+    <script src="/static/csv-export.js"></script>
+</body>
+</html>

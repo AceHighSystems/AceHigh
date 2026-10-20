@@ -1,0 +1,327 @@
+:root {
+    --bg: #000000;
+    --panel: #1b1b1b;
+    --panel-2: #303030;
+    --line: rgba(255, 255, 255, 0.10);
+    --text: #f7f9fc;
+    --muted: #9dafc4;
+    --accent: #baff3f;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+}
+
+.topbar {
+    height: 100px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    background: #000000;
+}
+
+.brand-logo {
+    display: block;
+    height: 75px;
+    width: auto;
+}
+
+.brand {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+}
+
+.product {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+}
+
+.connection {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #64748b;
+}
+
+.dot.online {
+    background: var(--accent);
+    box-shadow: 0 0 14px rgba(186, 255, 63, 0.45);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 380px minmax(0, 1fr);
+    gap: 18px;
+    padding: 18px;
+    align-items: start;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+h2 {
+    margin: 0 0 16px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+}
+
+.controls h2:not(:first-child) {
+    margin-top: 30px;
+}
+
+label {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+input,
+select,
+button {
+    width: 100%;
+    min-height: 38px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    font: inherit;
+}
+
+input,
+select {
+    padding: 0 11px;
+    background: var(--panel-2);
+    color: var(--text);
+}
+
+button {
+    padding: 0 14px;
+    background: var(--accent);
+    color: #0b1420;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+button.secondary {
+    background: transparent;
+    color: var(--text);
+}
+
+.metric {
+    margin: 18px 0 10px;
+    padding: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.metric span {
+    color: var(--muted);
+}
+
+.status-line {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 12px;
+    min-height: 18px;
+}
+
+.scope {
+    min-width: 0;
+}
+
+.scope-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 14px;
+}
+
+.scope-header h2 {
+    margin-bottom: 4px;
+}
+
+.subtle {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.scope-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.scope-actions button {
+    width: auto;
+    min-width: 76px;
+}
+
+.scope-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 145px;
+    gap: 10px;
+    width: 100%;
+}
+
+.scope-channel {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: rgba(8, 18, 31, 0.24);
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 7px;
+}
+
+.scope-channel-header {
+    height: 28px;
+    flex: 0 0 28px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.scope-channel-name {
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+}
+
+.scope-channel-value {
+    color: var(--accent);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+}
+
+.scope-plot {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+}
+
+.uplot {
+    font-family: inherit;
+}
+
+@media (max-width: 1100px) {
+    .scope-grid {
+        grid-template-columns: 1fr;
+        grid-auto-rows: 150px;
+    }
+}
+
+@media (max-width: 800px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .scope-header {
+        align-items: center;
+    }
+}
+
+.sidebar { display: grid; gap: 18px; min-width: 0; }
+.terminal { min-width: 0; padding: 18px; }
+.terminal-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.terminal-header h2 { margin: 0; font-size: 12px; }
+.terminal-badge { color: var(--accent); background: rgba(186,255,63,.08); border: 1px solid rgba(186,255,63,.18); border-radius: 5px; padding: 4px 7px; font-size: 10px; white-space: nowrap; }
+.terminal-output { height: 330px; overflow-y: auto; padding: 12px; background: #101210; border: 1px solid var(--line); border-radius: 7px; font: 12px/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; scrollbar-color: #4a5145 #101210; }
+.terminal-line { white-space: pre-wrap; color: #cbd5e1; }
+.terminal-line.command { color: var(--accent); margin-top: 9px; }
+.terminal-line.success { color: #b2edbe; }
+.terminal-line.error { color: #ff9b9b; }
+.terminal-line.info { color: var(--muted); }
+.terminal-time { color: #7e8b7a; margin-right: 7px; font-size: 10px; }
+.terminal-form { margin-top: 12px; }
+.terminal-entry { display: flex; align-items: center; background: #101210; border: 1px solid var(--line); border-radius: 7px; padding-left: 10px; }
+.terminal-prompt { color: var(--accent); font: 16px ui-monospace, monospace; }
+.terminal-entry input { min-width: 0; padding: 0 8px; background: transparent; border: 0; font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.terminal-entry:focus-within { border-color: var(--accent); }
+.terminal-entry input:focus { outline: 0; }
+.terminal-entry button { flex: 0 0 auto; width: auto; min-height: 30px; margin: 4px; padding: 0 10px; font-size: 11px; }
+.terminal-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 10px; }
+.terminal-footer button { width: auto; min-height: 26px; padding: 0 8px; font-size: 10px; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, input:focus-visible, .terminal-output:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (max-width: 1100px) and (min-width: 801px) { .layout { grid-template-columns: 340px minmax(0, 1fr); } }
+@media (max-width: 800px) {
+    .terminal-output { height: 240px; }
+    .scope-header { flex-direction: column; align-items: stretch; }
+    .scope-actions { flex-wrap: wrap; }
+}
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0 24px; }
+.dashboard-card { min-width: 0; min-height: 315px; padding: 14px 10px 10px; border: 1px solid var(--line); border-radius: 9px; background: #141715; }
+.dashboard-card-header { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 0 3px; min-height: 22px; }
+.dashboard-card-header h3 { margin: 0; font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.metric-state { font-size: 9px; color: var(--muted); }
+.dashboard-card[data-state="live"] .metric-state { color: var(--accent); }
+.dashboard-card[data-state="unavailable"] .metric-state,
+.dashboard-card[data-state="partial"] .metric-state,
+.dashboard-card[data-state="stale"] .metric-state { color: #ffc06b; }
+.angle-dial { position: relative; width: min(100%, 280px); margin: 0 auto; aspect-ratio: 1; }
+.angle-dial svg { display: block; width: 100%; height: 100%; }
+.dial-track { fill: none; stroke: rgba(186,255,63,.15); stroke-width: 2; }
+.dial-tick { stroke: #4a5548; stroke-width: 1; }
+.dial-tick.major { stroke: #a0b095; stroke-width: 2; }
+.dial-label { fill: #9dafc4; font-size: 10px; text-anchor: middle; }
+.dial-needle { fill: var(--accent); transform-origin: 120px 120px; transition: transform 80ms linear; visibility: hidden; }
+.angle-dial[data-has-value="true"] .dial-needle { visibility: visible; }
+.dial-reading { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; pointer-events: none; }
+.dial-reading strong { color: #ffffff; font-size: clamp(20px, 2vw, 30px); font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.dial-reading span { color: var(--muted); font-size: 8px; letter-spacing: .15em; }
+.angle-source { text-align: center; color: var(--muted); font-size: 10px; margin-top: 8px; }
+.dashboard-reading { display: flex; align-items: baseline; justify-content: center; gap: 4px; min-width: 0; font-variant-numeric: tabular-nums; }
+.dashboard-reading strong { font-size: clamp(17px, 1.6vw, 26px); font-weight: 650; letter-spacing: -.04em; }
+.dashboard-reading span { color: var(--muted); font-size: 11px; }
+.temperature-reading { color: var(--accent); height: 54px; padding-top: 12px; }
+.power-readings { display: flex; justify-content: space-around; align-items: center; gap: 8px; height: 54px; }
+.voltage-reading { color: #3ebbff; }
+.current-reading { color: #ffc06b; }
+.dashboard-plot { width: 100%; height: 200px; min-width: 0; overflow: hidden; }
+.power-legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; font-size: 9px; margin-top: 4px; }
+.voltage-key { color: #3ebbff; }
+.current-key { color: #ffc06b; }
+.raw-scope-label { color: var(--text); font-size: 11px; font-weight: 650; margin-bottom: 12px; }
+.raw-scope-label span { color: var(--muted); margin-left: 6px; font-weight: 400; }
+@media (max-width: 1100px) and (min-width: 801px) { .dashboard-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .dashboard-grid { grid-template-columns: 1fr; } .dashboard-reading strong { font-size: 25px; } .dial-reading strong { font-size: 30px; } }

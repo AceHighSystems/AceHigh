@@ -1,0 +1,29 @@
+{
+  "description": "Raw scan subsets from supplied 18 October captures. Every 20th complete scan plus the 32 largest fit residuals; values are copied unchanged.",
+  "captures": [
+    {
+      "name": "AceHigh-PCAP-A-2026-10-18T13-28-21-829Z.csv",
+      "sha256": "3c46954665219595a8f47d856980ed21d5fc92af5d8bfc3d28ef75f2d0fd76eb",
+      "complete_scans": 20000,
+      "dropped_incomplete_indices": 0
+    },
+    {
+      "name": "AceHigh-PCAP-A-2026-10-18T13-35-42-241Z.csv",
+      "sha256": "4aad81c567399e4282c1631e0b26d7b9bfcb5041256c8fc75962a333da698ef0",
+      "complete_scans": 19999,
+      "dropped_incomplete_indices": 2
+    },
+    {
+      "name": "AceHigh-PCAP-A-2026-10-18T13-43-31-373Z.csv",
+      "sha256": "26c9f74217c9828a365bf945811f71563cd6d992446cb42d4f056d91a0b55fd1",
+      "complete_scans": 20000,
+      "dropped_incomplete_indices": 0
+    }
+  ],
+  "fields": {
+    "raw": "uint32 ch0..ch13",
+    "time": "mean browser receipt elapsed seconds, not converter timestamps",
+    "hold": "0..9 trimmed plateau label; -1 for transitions",
+    "speed_reference": "unwrapped degrees from assumed constant rotation and locally smoothed browser receipt time; not measured ground truth"
+  }
+}
