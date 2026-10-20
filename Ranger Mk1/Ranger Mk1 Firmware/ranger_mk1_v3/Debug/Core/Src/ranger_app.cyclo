@@ -1,0 +1,12 @@
+../Drivers/CMSIS/Include/core_cm4.h:1933:34:__NVIC_SystemReset	1
+../Core/Src/ranger_app.c:73:13:ranger_app_set_led_pa1	2
+../Core/Src/ranger_app.c:88:6:ranger_app_init	1
+../Core/Src/ranger_app.c:127:6:ranger_app_tick	10
+../Core/Src/ranger_app.c:220:13:ranger_app_check_reset	1
+../Core/Src/ranger_app.c:229:13:ranger_app_check_mode	3
+../Core/Src/ranger_app.c:242:13:ranger_app_check_step_move	3
+../Core/Src/ranger_app.c:284:13:ranger_stop_step_timers	3
+../Core/Src/ranger_app.c:310:13:ranger_app_check_step_status	4
+../Core/Src/ranger_app.c:348:13:ranger_set_step_dir	4
+../Core/Src/ranger_app.c:382:13:ranger_step_move	17
+../Core/Src/ranger_app.c:535:6:HAL_TIM_PeriodElapsedCallback	5
