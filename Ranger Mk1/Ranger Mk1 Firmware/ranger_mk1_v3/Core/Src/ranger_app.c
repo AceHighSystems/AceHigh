@@ -17,6 +17,7 @@
 #include "DRV8462.h"
 #include "INA229.h"
 #include "PCAP02.h"
+#include "MRAM.h"
 
 
 /* =========================
@@ -45,6 +46,18 @@ static uint32_t last_uptime_ms = 0U;
 static uint32_t last_heartbeat_ms = 0U;
 static uint32_t last_blink_ms = 0U;
 static uint32_t last_ina_ms = 0;
+
+
+/* MRAM test references */
+#define MRAM_TEST_ADDRESS  0x000000UL
+
+static uint32_t last_mram_write_ms = 0U;
+static uint32_t last_mram_read_ms  = 0U;
+
+/* Available for inspection in the debugger. */
+static volatile HAL_StatusTypeDef mram_init_result  = HAL_ERROR;
+static volatile HAL_StatusTypeDef mram_write_result = HAL_ERROR;
+static volatile HAL_StatusTypeDef mram_read_result  = HAL_ERROR;
 /* Global helper */
 
 
@@ -112,6 +125,7 @@ void ranger_app_init(void)
   g_param.debug = pcap_init(0);
   g_param.debug = pcap_init(1);
   ina229_init();
+  mram_init_result = MRAM_Init();
 
 
   uptime_s = 0U;
@@ -205,6 +219,39 @@ void ranger_app_tick(void)
 
       g_param.debug = read_status;
 
+  }
+
+
+  if (mram_init_result == HAL_OK)
+  {
+      /* Every 3 seconds: read MRAM and update the parameter. */
+      if ((uint32_t)(now - last_mram_read_ms) >= 3000U)
+      {
+          last_mram_read_ms = now;
+
+          uint32_t value;
+
+          mram_read_result = MRAM_Read(MRAM_TEST_ADDRESS, (uint8_t *)&value, sizeof(value));
+
+          /* Keep the existing parameter value if the SPI read fails. */
+          if (mram_read_result == HAL_OK)
+          {
+              g_param.test = value;
+          }
+      }
+  }
+
+  if (mram_init_result == HAL_OK)
+  {
+	 /* Every 5 seconds: write the current parameter value to MRAM. */
+	 if ((uint32_t)(now - last_mram_write_ms) >= 5000U)
+	 {
+	     last_mram_write_ms = now;
+
+	     uint32_t value = g_param.test;
+
+	     mram_write_result = MRAM_Write(MRAM_TEST_ADDRESS, (const uint8_t *)&value, sizeof(value));
+	    }
   }
 
 

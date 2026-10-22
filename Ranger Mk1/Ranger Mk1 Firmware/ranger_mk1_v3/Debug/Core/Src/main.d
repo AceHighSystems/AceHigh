@@ -29,8 +29,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
- ../Core/Inc/ranger_app.h ../Core/Inc/main.h \
- /Users/tor/Documents/Ranger/Ranger_module_firmware/AceHigh_common/AceHigh_Inc/ace_protocol.h
+ ../Core/Inc/ranger_app.h ../Core/Inc/main.h
 ../Core/Inc/main.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 ../Core/Inc/stm32g4xx_hal_conf.h:
@@ -64,4 +63,3 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Core/Inc/ranger_app.h:
 ../Core/Inc/main.h:
-/Users/tor/Documents/Ranger/Ranger_module_firmware/AceHigh_common/AceHigh_Inc/ace_protocol.h:

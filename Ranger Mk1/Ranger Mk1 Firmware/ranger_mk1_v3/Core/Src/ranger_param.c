@@ -29,7 +29,6 @@ ranger_param_t g_param =
     .target_position = 0,
     .microstep       = 1U,
     .led1            = 1U,
-    .test            = 2U,
 	.debug		     = 1
 };
 

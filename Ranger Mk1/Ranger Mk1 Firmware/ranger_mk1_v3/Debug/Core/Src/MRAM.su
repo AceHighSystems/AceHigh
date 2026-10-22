@@ -1,0 +1,8 @@
+../Core/Src/MRAM.c:19:13:cs_high	16	static,ignoring_inline_asm
+../Core/Src/MRAM.c:26:13:cs_low	16	static,ignoring_inline_asm
+../Core/Src/MRAM.c:32:26:command	24	static
+../Core/Src/MRAM.c:40:19:MRAM_ReadStatus	32	static
+../Core/Src/MRAM.c:53:26:write_enable	16	static
+../Core/Src/MRAM.c:63:19:MRAM_Init	16	static
+../Core/Src/MRAM.c:97:19:MRAM_Read	80	static
+../Core/Src/MRAM.c:121:19:MRAM_Write	32	static

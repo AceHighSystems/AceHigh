@@ -1,5 +1,6 @@
 "./Core/Src/DRV8462.o"
 "./Core/Src/INA229.o"
+"./Core/Src/MRAM.o"
 "./Core/Src/PCAP02.o"
 "./Core/Src/ace_light.o"
 "./Core/Src/main.o"

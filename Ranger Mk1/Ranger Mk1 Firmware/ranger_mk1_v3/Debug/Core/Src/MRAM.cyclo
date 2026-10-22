@@ -1,0 +1,8 @@
+../Core/Src/MRAM.c:19:13:cs_high	2
+../Core/Src/MRAM.c:26:13:cs_low	2
+../Core/Src/MRAM.c:32:26:command	1
+../Core/Src/MRAM.c:40:19:MRAM_ReadStatus	3
+../Core/Src/MRAM.c:53:26:write_enable	3
+../Core/Src/MRAM.c:63:19:MRAM_Init	9
+../Core/Src/MRAM.c:97:19:MRAM_Read	9
+../Core/Src/MRAM.c:121:19:MRAM_Write	8

@@ -1,7 +1,7 @@
 Core/Src/ranger_can.o: ../Core/Src/ranger_can.c ../Core/Inc/ranger_can.h \
- ../Core/Inc/ace_light.h \
- /Users/tor/Documents/Ranger/Ranger_module_firmware/AceHigh_common/AceHigh_Inc/ranger_param.h \
- ../Core/Inc/main.h ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
+ ../Core/Inc/ace_light.h ../Core/Inc/ranger_param.h \
+ ../Core/Inc/ace_light.h ../Core/Inc/main.h \
+ ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  ../Core/Inc/stm32g4xx_hal_conf.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h \
@@ -33,7 +33,8 @@ Core/Src/ranger_can.o: ../Core/Src/ranger_can.c ../Core/Inc/ranger_can.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h
 ../Core/Inc/ranger_can.h:
 ../Core/Inc/ace_light.h:
-/Users/tor/Documents/Ranger/Ranger_module_firmware/AceHigh_common/AceHigh_Inc/ranger_param.h:
+../Core/Inc/ranger_param.h:
+../Core/Inc/ace_light.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 ../Core/Inc/stm32g4xx_hal_conf.h:
