@@ -3,6 +3,7 @@
 "./Core/Src/MRAM.o"
 "./Core/Src/PCAP02.o"
 "./Core/Src/ace_light.o"
+"./Core/Src/encoder.o"
 "./Core/Src/main.o"
 "./Core/Src/ranger_app.o"
 "./Core/Src/ranger_can.o"

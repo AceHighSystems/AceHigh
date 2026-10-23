@@ -1,5 +1,3 @@
-
-
 /*
  *  PCAP02.c
  *
@@ -16,9 +14,6 @@
 extern SPI_HandleTypeDef hspi3;
 
 
-/* =========================
-   PCAP02 Prototyping
-   ========================= */
 static int32_t pcap_load_firmware(int8_t pcap_nbr)
 {
 

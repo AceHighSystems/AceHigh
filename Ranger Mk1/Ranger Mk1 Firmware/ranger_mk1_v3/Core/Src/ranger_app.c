@@ -11,12 +11,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <math.h>
 #include "ranger_can.h"
 #include "ranger_param.h"
 #include "ranger_app.h"
 #include "DRV8462.h"
 #include "INA229.h"
-#include "PCAP02.h"
+#include "encoder.h"
 #include "MRAM.h"
 
 
@@ -45,8 +46,8 @@ int32_t current;
 static uint32_t last_uptime_ms = 0U;
 static uint32_t last_heartbeat_ms = 0U;
 static uint32_t last_blink_ms = 0U;
-static uint32_t last_ina_ms = 0;
-
+static uint32_t last_sens_ms = 0;
+static uint32_t last_slow_sens_ms = 0;
 
 /* MRAM test references */
 #define MRAM_TEST_ADDRESS  0x000000UL
@@ -59,6 +60,13 @@ static volatile HAL_StatusTypeDef mram_init_result  = HAL_ERROR;
 static volatile HAL_StatusTypeDef mram_write_result = HAL_ERROR;
 static volatile HAL_StatusTypeDef mram_read_result  = HAL_ERROR;
 /* Global helper */
+
+/* Replace the comments with all 14 measured values per array. */
+static const encoder_cal_t encoder_cal =
+{
+    .ch_max = { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28},
+    .ch_min = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
+};
 
 
 /* =========================
@@ -122,8 +130,7 @@ void ranger_app_init(void)
   /* Initialize peripheral drivers*/
   drv8462_init();
   ina229_init();
-  g_param.debug = pcap_init(0);
-  g_param.debug = pcap_init(1);
+  encoder_init();
   ina229_init();
   mram_init_result = MRAM_Init();
 
@@ -133,6 +140,9 @@ void ranger_app_init(void)
   last_uptime_ms = now;
   last_heartbeat_ms = now;
   last_blink_ms = now;
+
+
+
 }
 
 
@@ -153,78 +163,41 @@ void ranger_app_tick(void)
 	last_blink_ms += 250U;
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
   }
+
+  /* Tasks scheduled to run max freq */
+  ranger_app_check_reset();
+  ranger_app_check_mode();
+  ranger_app_check_step_status();
+  ranger_app_check_step_move();
+
+
   /* Tasks scheduled to run every x miliseconds */
-  if ((now - last_ina_ms) >=10U)
+  if ((now - last_slow_sens_ms) >=250U)
   {
-      last_ina_ms = now;
-      /* Read sensor values */
+      last_slow_sens_ms = now;
+
       g_param.current = (int32_t)(ina229_read_current()* 1000.0f);
       g_param.voltage = (int32_t)(ina229_read_volt() * 1000.0f);
       g_param.temperature = (int32_t)ina229_read_temp();
-
-
-      uint32_t raw[7];
-      int32_t read_status = 0;
-
-      for (int channel = 1; channel <= 7; ++channel)
-      {
-          int32_t value = pcap_read_channel(0, channel);
-
-          if (value < 0)
-          {
-              read_status = value;
-              break;
-          }
-          raw[channel - 1] = (uint32_t)value;
-      }
-
-      /* Update telemetry only if all seven reads succeeded. */
-      if (read_status == 0)
-      {
-          g_param.ch0 = raw[0];  // PCAP_A PC1
-          g_param.ch1 = raw[1];  // PCAP_A PC2
-          g_param.ch2 = raw[2];  // PCAP_A PC3
-          g_param.ch3 = raw[3];  // PCAP_A PC4
-          g_param.ch4 = raw[4];  // PCAP_A PC5
-          g_param.ch5 = raw[5];  // PCAP_A PC6
-          g_param.ch6 = raw[6];  // PCAP_A PC7
-      }
-
-      g_param.debug = read_status;
-
-
-      for (int channel = 1; channel <= 7; ++channel)
-      {
-          int32_t value = pcap_read_channel(1, channel);
-
-          if (value < 0)
-          {
-              read_status = value;
-              break;
-          }
-          raw[channel - 1] = (uint32_t)value;
-      }
-
-      /* Update telemetry only if all seven reads succeeded. */
-      if (read_status == 0)
-      {
-          g_param.ch7 = raw[0];  // PCAP_B PC1
-          g_param.ch8 = raw[1];  // PCAP_B PC2
-          g_param.ch9 = raw[2];  // PCAP_B PC3
-          g_param.ch10 = raw[3];  // PCAP_B PC4
-          g_param.ch11 = raw[4];  // PCAP_B PC5
-          g_param.ch12 = raw[5];  // PCAP_B PC6
-          g_param.ch13 = raw[6];  // PCAP_B PC7
-      }
-
-      g_param.debug = read_status;
-
   }
 
+  /* Tasks scheduled to run every x miliseconds */
+  if ((now - last_sens_ms) >=100U)
+  {
+      last_sens_ms = now;
+
+      float angle_rad;
+
+      int32_t status = encoder_get_angle(&encoder_cal, &angle_rad);
+
+      g_param.debug = status;
+      g_param.angle = (int32_t)lroundf(angle_rad * 1000000.0f);
+  }
+/**
 
   if (mram_init_result == HAL_OK)
   {
-      /* Every 3 seconds: read MRAM and update the parameter. */
+      //Every 3 seconds: read MRAM and update the parameter.
       if ((uint32_t)(now - last_mram_read_ms) >= 3000U)
       {
           last_mram_read_ms = now;
@@ -233,7 +206,7 @@ void ranger_app_tick(void)
 
           mram_read_result = MRAM_Read(MRAM_TEST_ADDRESS, (uint8_t *)&value, sizeof(value));
 
-          /* Keep the existing parameter value if the SPI read fails. */
+          // Keep the existing parameter value if the SPI read fails.
           if (mram_read_result == HAL_OK)
           {
               g_param.test = value;
@@ -243,7 +216,7 @@ void ranger_app_tick(void)
 
   if (mram_init_result == HAL_OK)
   {
-	 /* Every 5 seconds: write the current parameter value to MRAM. */
+	 //Every 5 seconds: write the current parameter value to MRAM.
 	 if ((uint32_t)(now - last_mram_write_ms) >= 5000U)
 	 {
 	     last_mram_write_ms = now;
@@ -254,14 +227,9 @@ void ranger_app_tick(void)
 	    }
   }
 
-
-  ranger_app_check_reset();
-  ranger_app_check_mode();
-  ranger_app_check_step_status();
-  ranger_app_check_step_move();
-
-
+  */
 }
+
 
 
 static void ranger_app_check_reset(void)

@@ -10,6 +10,7 @@ C_SRCS += \
 ../Core/Src/MRAM.c \
 ../Core/Src/PCAP02.c \
 ../Core/Src/ace_light.c \
+../Core/Src/encoder.c \
 ../Core/Src/main.c \
 ../Core/Src/ranger_app.c \
 ../Core/Src/ranger_can.c \
@@ -26,6 +27,7 @@ OBJS += \
 ./Core/Src/MRAM.o \
 ./Core/Src/PCAP02.o \
 ./Core/Src/ace_light.o \
+./Core/Src/encoder.o \
 ./Core/Src/main.o \
 ./Core/Src/ranger_app.o \
 ./Core/Src/ranger_can.o \
@@ -42,6 +44,7 @@ C_DEPS += \
 ./Core/Src/MRAM.d \
 ./Core/Src/PCAP02.d \
 ./Core/Src/ace_light.d \
+./Core/Src/encoder.d \
 ./Core/Src/main.d \
 ./Core/Src/ranger_app.d \
 ./Core/Src/ranger_can.d \
@@ -60,7 +63,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/DRV8462.cyclo ./Core/Src/DRV8462.d ./Core/Src/DRV8462.o ./Core/Src/DRV8462.su ./Core/Src/INA229.cyclo ./Core/Src/INA229.d ./Core/Src/INA229.o ./Core/Src/INA229.su ./Core/Src/MRAM.cyclo ./Core/Src/MRAM.d ./Core/Src/MRAM.o ./Core/Src/MRAM.su ./Core/Src/PCAP02.cyclo ./Core/Src/PCAP02.d ./Core/Src/PCAP02.o ./Core/Src/PCAP02.su ./Core/Src/ace_light.cyclo ./Core/Src/ace_light.d ./Core/Src/ace_light.o ./Core/Src/ace_light.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/ranger_app.cyclo ./Core/Src/ranger_app.d ./Core/Src/ranger_app.o ./Core/Src/ranger_app.su ./Core/Src/ranger_can.cyclo ./Core/Src/ranger_can.d ./Core/Src/ranger_can.o ./Core/Src/ranger_can.su ./Core/Src/ranger_param.cyclo ./Core/Src/ranger_param.d ./Core/Src/ranger_param.o ./Core/Src/ranger_param.su ./Core/Src/stm32g4xx_hal_msp.cyclo ./Core/Src/stm32g4xx_hal_msp.d ./Core/Src/stm32g4xx_hal_msp.o ./Core/Src/stm32g4xx_hal_msp.su ./Core/Src/stm32g4xx_it.cyclo ./Core/Src/stm32g4xx_it.d ./Core/Src/stm32g4xx_it.o ./Core/Src/stm32g4xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32g4xx.cyclo ./Core/Src/system_stm32g4xx.d ./Core/Src/system_stm32g4xx.o ./Core/Src/system_stm32g4xx.su
+	-$(RM) ./Core/Src/DRV8462.cyclo ./Core/Src/DRV8462.d ./Core/Src/DRV8462.o ./Core/Src/DRV8462.su ./Core/Src/INA229.cyclo ./Core/Src/INA229.d ./Core/Src/INA229.o ./Core/Src/INA229.su ./Core/Src/MRAM.cyclo ./Core/Src/MRAM.d ./Core/Src/MRAM.o ./Core/Src/MRAM.su ./Core/Src/PCAP02.cyclo ./Core/Src/PCAP02.d ./Core/Src/PCAP02.o ./Core/Src/PCAP02.su ./Core/Src/ace_light.cyclo ./Core/Src/ace_light.d ./Core/Src/ace_light.o ./Core/Src/ace_light.su ./Core/Src/encoder.cyclo ./Core/Src/encoder.d ./Core/Src/encoder.o ./Core/Src/encoder.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/ranger_app.cyclo ./Core/Src/ranger_app.d ./Core/Src/ranger_app.o ./Core/Src/ranger_app.su ./Core/Src/ranger_can.cyclo ./Core/Src/ranger_can.d ./Core/Src/ranger_can.o ./Core/Src/ranger_can.su ./Core/Src/ranger_param.cyclo ./Core/Src/ranger_param.d ./Core/Src/ranger_param.o ./Core/Src/ranger_param.su ./Core/Src/stm32g4xx_hal_msp.cyclo ./Core/Src/stm32g4xx_hal_msp.d ./Core/Src/stm32g4xx_hal_msp.o ./Core/Src/stm32g4xx_hal_msp.su ./Core/Src/stm32g4xx_it.cyclo ./Core/Src/stm32g4xx_it.d ./Core/Src/stm32g4xx_it.o ./Core/Src/stm32g4xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32g4xx.cyclo ./Core/Src/system_stm32g4xx.d ./Core/Src/system_stm32g4xx.o ./Core/Src/system_stm32g4xx.su
 
 .PHONY: clean-Core-2f-Src
 

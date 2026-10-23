@@ -31,7 +31,7 @@ Core/Src/ranger_app.o: ../Core/Src/ranger_app.c ../Core/Inc/main.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Core/Inc/ranger_can.h ../Core/Inc/ranger_param.h \
  ../Core/Inc/ace_light.h ../Core/Inc/ranger_app.h ../Core/Inc/main.h \
- ../Core/Inc/DRV8462.h ../Core/Inc/INA229.h ../Core/Inc/PCAP02.h \
+ ../Core/Inc/DRV8462.h ../Core/Inc/INA229.h ../Core/Inc/encoder.h \
  ../Core/Inc/MRAM.h
 ../Core/Inc/main.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
@@ -71,5 +71,5 @@ Core/Src/ranger_app.o: ../Core/Src/ranger_app.c ../Core/Inc/main.h \
 ../Core/Inc/main.h:
 ../Core/Inc/DRV8462.h:
 ../Core/Inc/INA229.h:
-../Core/Inc/PCAP02.h:
+../Core/Inc/encoder.h:
 ../Core/Inc/MRAM.h:
