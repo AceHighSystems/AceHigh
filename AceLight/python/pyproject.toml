@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acelight"
+version = "0.0.0a1"
+description = "Python client for the AceLight CAN protocol"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "AceHigh" }
+]
+dependencies = [
+    "python-can[serial]>=4.6.1,<5"
+]
+
+[project.urls]
+Homepage = "https://ace-high.com"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["acelight", "acelight.*"]

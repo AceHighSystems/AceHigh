@@ -230,7 +230,6 @@ void ace_receive(
         return;
     }
 
-
     /*
      * Decode and validate the AceLight identifier.
      *
@@ -240,7 +239,6 @@ void ace_receive(
     {
         return;
     }
-
 
     /*
      * Normal messages must be addressed to this node.
@@ -871,7 +869,6 @@ static void ace_handle_broadcast(
 /* ============================================================
  * Response handling
  * ============================================================ */
-
 /**
  * @brief Build and transmit an AceLight response.
  *

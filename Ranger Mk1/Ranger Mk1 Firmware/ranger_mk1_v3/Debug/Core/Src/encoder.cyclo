@@ -1,4 +1,4 @@
-../Core/Src/encoder.c:55:9:encoder_init	1
-../Core/Src/encoder.c:77:9:encoder_get_raw	5
-../Core/Src/encoder.c:122:9:encoder_get_angle	3
-../Core/Src/encoder.c:188:9:encoder_sector_get	21
+../Core/Src/encoder.c:59:9:encoder_init	1
+../Core/Src/encoder.c:81:9:encoder_get_raw	5
+../Core/Src/encoder.c:126:9:encoder_get_angle	3
+../Core/Src/encoder.c:191:9:encoder_sector_get	21

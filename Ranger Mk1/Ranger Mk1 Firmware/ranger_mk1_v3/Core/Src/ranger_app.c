@@ -67,19 +67,8 @@ static volatile HAL_StatusTypeDef mram_read_result  = HAL_ERROR;
 */
 static const encoder_cal_t encoder_cal =
 {
-    .ch_max = {
-        3210449, 5337679, 4547566, 4981811,
-        4102258, 4419746, 3912183, 3781551,
-        4660794, 5146233, 4416821, 4767150,
-        3766631, 4267547
-    },
-
-    .ch_min = {
-        3196261, 5167109, 4421927, 4840197,
-        3987906, 4283191, 3794032, 3759819,
-        4486354, 4891741, 4217246, 4550988,
-        3635845, 4128629
-    }
+    .ch_max = {3214815, 5331886, 4528104, 4961084, 4093387, 4418432, 3904771, 3808239, 4666956, 5204089, 4406876, 4728601, 3745207, 4252693},
+    .ch_min = {3190538, 5144615, 4402249, 4816330, 3968690, 4260251, 3774827, 3749920, 4467858, 4869690, 4197838, 4525214, 3616111, 4105331}
 };
 
 
@@ -178,7 +167,6 @@ void ranger_app_tick(void)
   ranger_app_check_mode();
   ranger_app_check_step_status();
   ranger_app_check_step_move();
-
 
   /* Tasks scheduled to run every x miliseconds */
   if ((now - last_slow_sens_ms) >=250U)
