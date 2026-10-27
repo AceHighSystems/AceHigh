@@ -137,11 +137,12 @@ def test_dashboard_metrics_with_raw_plots_and_terminal(application):
             assert message["node"] == 2 and message["run_id"] == 1
             assert message["elapsed_s"] >= 0
             samples[message["signal"]] = message["value"]
-            if len(samples) == 4:
+            if len(samples) == 5:
                 break
         assert abs(samples.pop("angle") - (360.0 - 123.456)) < 0.001
-        assert samples == {"temperature": 31, "voltage": 24000, "current": -1250}
-        assert not any(name == "angle" for _, _, name in bus.requests)
+        assert samples == {"temperature": 31, "voltage": 24000, "current": -1250,
+                           "fine_angle": 321000}
+        assert any(name == "angle" for _, _, name in bus.requests)
         ws.send_json({"type": "read", "node": 2, "param": "microstep", "request_id": "terminal-metrics"})
         assert receive_json(ws, "read_response")["value"] == 256
         while True:
@@ -199,8 +200,61 @@ def test_one_unsupported_dashboard_parameter_does_not_stop_other_metrics(applica
         assert error["signal"] == "temperature" and "0x03" in error["message"]
         assert receive_json(ws, "metric_sample")["signal"] == "voltage"
         assert receive_json(ws, "metric_sample")["signal"] == "current"
-        assert receive_json(ws, "metric_sample")["signal"] in {"voltage", "current"}
-        assert not any(name == "angle" for _, _, name in bus.requests)
+        assert receive_json(ws, "metric_sample")["signal"] == "fine_angle"
+        assert any(name == "angle" for _, _, name in bus.requests)
+        ws.send_json({"type": "metrics_stop"})
+        receive_json(ws, "metrics_stopped")
+
+
+@pytest.mark.parametrize("raw", [-3141593, -1, 0, 1, 3141593])
+def test_firmware_fine_angle_preserves_signed_parameter_and_units(application, raw):
+    client, bus = application
+    bus.values["angle"] = raw
+    with client.websocket_connect("/ws") as ws:
+        ws.receive_json()
+        ws.send_json({"type": "metrics_start", "node": 2, "run_id": 7})
+        receive_json(ws, "metrics_started")
+        for _ in range(20):
+            message = receive_json(ws, "metric_sample")
+            if message["signal"] == "fine_angle":
+                assert message["value"] == raw
+                assert message["unit"] == "urad"
+                assert message["source"] == "ranger"
+                assert message["parameter"] == "angle"
+                assert message["node"] == 2 and message["run_id"] == 7
+                break
+        else:
+            pytest.fail("Firmware angle parameter did not reach the browser")
+        ws.send_json({"type": "metrics_stop"})
+        receive_json(ws, "metrics_stopped")
+
+
+def test_unsupported_fine_angle_does_not_stop_other_metrics_and_recovers(application):
+    client, bus = application
+    bus.read_status["angle"] = 3
+    with client.websocket_connect("/ws") as ws:
+        ws.receive_json()
+        ws.send_json({"type": "metrics_start", "node": 2, "run_id": 8})
+        receive_json(ws, "metrics_started")
+        error = receive_json(ws, "metric_error")
+        assert error["signal"] == "fine_angle"
+        assert error["parameter"] == "angle" and "0x03" in error["message"]
+        # A firmware parameter failure must not stop the other dashboard reads.
+        others = set()
+        for _ in range(20):
+            message = receive_json(ws, "metric_sample")
+            others.add(message["signal"])
+            if others.issuperset({"temperature", "voltage", "current"}):
+                break
+        assert others.issuperset({"temperature", "voltage", "current"})
+        bus.read_status["angle"] = 2
+        for _ in range(50):
+            message = receive_json(ws, "metric_sample")
+            if message["signal"] == "fine_angle":
+                assert message["value"] == 321000
+                break
+        else:
+            pytest.fail("Fine-angle acquisition did not recover")
         ws.send_json({"type": "metrics_stop"})
         receive_json(ws, "metrics_stopped")
 

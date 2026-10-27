@@ -126,6 +126,18 @@
                 </section>
             </div>
 
+            <section class="dashboard-card fine-angle-card" id="fineangle-card" aria-labelledby="fineangle-title">
+                <div class="dashboard-card-header">
+                    <h3 id="fineangle-title">Fine angle</h3>
+                    <span class="metric-state" id="fineangle-state">Ready</span>
+                </div>
+                <div class="fine-angle-summary">
+                    <div class="dashboard-reading fine-angle-reading"><strong id="fineangle-value">—</strong><span>rad</span></div>
+                    <span class="subtle">Three cycles per mechanical revolution</span>
+                </div>
+                <div id="fineangle-plot" class="fine-angle-plot" aria-label="Firmware angle parameter in radians versus elapsed seconds"></div>
+            </section>
+
             <div class="raw-scope-label">Raw encoder channels <span>ch0–ch13</span></div>
             <div id="scope-grid" class="scope-grid"></div>
         </section>

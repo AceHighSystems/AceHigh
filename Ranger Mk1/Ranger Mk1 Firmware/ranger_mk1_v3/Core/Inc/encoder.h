@@ -25,11 +25,7 @@ typedef struct
 
 int32_t encoder_init(void);
 
-
-int32_t encoder_get_angle(
-		const encoder_cal_t *cal,
-		float *angle_rad);
-
+int32_t encoder_get_angle(const encoder_cal_t *cal, float *angle, uint8_t *sector, uint32_t *raw_data);
 
 
 #endif

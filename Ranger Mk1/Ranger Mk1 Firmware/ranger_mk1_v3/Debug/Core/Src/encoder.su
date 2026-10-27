@@ -1,3 +1,4 @@
-../Core/Src/encoder.c:16:9:encoder_init	16	static
-../Core/Src/encoder.c:38:9:encoder_get_raw	88	static
-../Core/Src/encoder.c:83:9:encoder_get_angle	192	static
+../Core/Src/encoder.c:55:9:encoder_init	16	static
+../Core/Src/encoder.c:77:9:encoder_get_raw	88	static
+../Core/Src/encoder.c:122:9:encoder_get_angle	144	static
+../Core/Src/encoder.c:188:9:encoder_sector_get	96	static

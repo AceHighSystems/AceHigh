@@ -50,8 +50,11 @@
    Diagnostics (0xC0–0xDF)
    ========================= */
 #define PARAM_LED_PA1          		  0xC0U
-#define PARAM_TEST          		  0xC1U
+#define PARAM_UPTIME 				  0xC1U
 #define PARAM_DEBUG             	  0xC2U
+#define PARAM_SECTOR             	  0xC3U
+#define PARAM_TEST          		  0xC4U
+
 
 /* =========================
    Raw capacitive channels  (0xC0–0xDF)
@@ -111,7 +114,7 @@ typedef struct
 	uint8_t   led1;
     uint32_t  uptime_s;
     uint32_t  debug;
-
+    uint8_t   sector;
     uint32_t  test;
 
     /* Encoder raw channels - prototyping */

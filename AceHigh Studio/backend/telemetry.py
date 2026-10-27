@@ -10,7 +10,7 @@ from ringbuffer import BufferSlice, UInt32RingBuffer
 @dataclass(frozen=True)
 class SignalDefinition:
     signal_id: int
-    capacity: int = 16_384
+    capacity: int = 30_384
 
 
 @dataclass(frozen=True)

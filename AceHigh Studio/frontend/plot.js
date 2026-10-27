@@ -2,7 +2,7 @@
     "use strict";
 
     const CHANNEL_COUNT = 14;
-    const MAX_POINTS = 5000;
+    const MAX_POINTS = 15000;
     const RENDER_INTERVAL_MS = 30;
 
     const scopes = new Map();

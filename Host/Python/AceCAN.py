@@ -2,6 +2,10 @@
 
 import can
 import struct
+import csv
+import signal
+from datetime import datetime
+from pathlib import Path
 
 # ============================================================
 # Configuration
@@ -51,9 +55,11 @@ PARAM = {
     "current":              (0x81, "I32"),
     "temperature":          (0x82, "I32"),
 
-    "led":                  (0xC0, "U8"),
-    "test":                 (0xC1, "U32"),
-    "debug":                (0xC2, "I32"),
+    "led1":                 (0xC0, "U32"),
+    "uptime_s":             (0xC1, "U32"),
+    "debug":                (0xC2, "U32"),
+    "sector":               (0xC3, "U8"),
+    "test":                 (0xC4, "U32"),
 
     "ch0":                  (0xD0, "U32"),
     "ch1":                  (0xD1, "U32"),
@@ -171,7 +177,6 @@ def write_param(bus, name, value):
 # ============================================================
 # Prototype plotting - to be removed again
 # ============================================================
-
 from collections import deque
 import time
 
@@ -180,13 +185,15 @@ import pyqtgraph as pg
 
 
 def plot_raw_single(bus):
-    POLL_MS = 50
-    WINDOW_S = 60*10
-    RESPONSE_TIMEOUT_S = 0.25
+    POLL_MS = 100
+    WINDOW_S = 60 * 4
+    RESPONSE_TIMEOUT_S = 0.5
 
     channels = [
-        ("ch0", "PCAP_A PC1", "#B7FF00"),
-        ("ch1", "PCAP_A PC2", "#3EBBFF"),
+        ("ch0", "Channel 0", "#FF70C8"),
+        ("ch7", "Channel 7", "#FF70C8"),
+        ("sector", "Sector", "#B7FF00"),
+        ("angle", "Angle", "#3EBBFF"),
     ]
 
     # Retain QApplication so the plot can be reopened.
@@ -196,16 +203,28 @@ def plot_raw_single(bus):
     plot_raw_single._app = app
 
     window = QtWidgets.QDialog()
-    window.setWindowTitle("Ranger — PCAP_A PC1 and PC2")
-    window.resize(1100, 800)
+    window.setWindowTitle("Ranger — ch0, ch7, Sector and Angle")
+    window.resize(1100, 1000)
 
     layout = QtWidgets.QVBoxLayout(window)
+    toolbar = QtWidgets.QHBoxLayout()
+    export_status = QtWidgets.QLabel("CSV includes only the current four-minute plotting window.")
+    toolbar.addWidget(export_status)
+    toolbar.addStretch()
+    export_button = QtWidgets.QPushButton("Export CSV…")
+    toolbar.addWidget(export_button)
+    layout.addLayout(toolbar)
+
+    # Retain only the same rolling time window as the plots.
+    # Each row holds a time, value and error for every sequential channel read.
+    export_rows = deque()
+    interrupted = False
     states = []
 
     for name, label, color in channels:
         param_id, data_type = PARAM[name]
 
-        info = QtWidgets.QLabel(f"{name} / {label}: Waiting for data...")
+        info = QtWidgets.QLabel(f"{label}: Waiting for data...")
         info.setStyleSheet(
             f"color: {color}; font-size: 14px; padding: 6px;"
         )
@@ -213,12 +232,16 @@ def plot_raw_single(bus):
 
         plot = pg.PlotWidget(background="#172A49")
         plot.setLabel("bottom", "Elapsed time", units="s")
-        plot.setLabel("left", f"{name} / {label}", units="counts")
+        plot.setLabel("left", label)
         plot.showGrid(x=True, y=True, alpha=0.25)
         plot.getAxis("left").enableAutoSIPrefix(False)
         plot.setXRange(0, WINDOW_S, padding=0)
         plot.enableAutoRange(axis="y", enable=True)
-        layout.addWidget(plot)
+        layout.addWidget(plot, stretch=1)
+
+        # Link all time axes to the first plot.
+        if states:
+            plot.setXLink(states[0]["plot"])
 
         states.append({
             "name": name,
@@ -229,11 +252,15 @@ def plot_raw_single(bus):
             "plot": plot,
             "curve": plot.plot(pen=pg.mkPen(color, width=2)),
             "samples": deque(),
+            "error": None,
         })
 
     start = time.monotonic()
+    display_end = 0.0
 
     def read_value(state):
+        if interrupted:
+            raise InterruptedError("Interrupted")
         bus.send(
             can.Message(
                 arbitration_id=make_id(
@@ -251,13 +278,16 @@ def plot_raw_single(bus):
         deadline = time.monotonic() + RESPONSE_TIMEOUT_S
 
         while True:
+            if interrupted:
+                raise InterruptedError("Interrupted")
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise TimeoutError("No response from Ranger")
 
-            msg = bus.recv(remaining)
+            # Short waits let Ctrl+C interrupt even when the node is offline.
+            msg = bus.recv(min(remaining, 0.05))
             if msg is None:
-                raise TimeoutError("No response from Ranger")
+                continue
 
             if (
                 not msg.is_extended_id
@@ -287,26 +317,39 @@ def plot_raw_single(bus):
                 raise ValueError(f"AceLight status: 0x{data[0]:02X}")
 
             if len(data) < 1 + state["size"]:
-                raise ValueError(f"Incomplete response: {len(data)} bytes")
+                raise ValueError(
+                    f"Incomplete response: {len(data)} bytes"
+                )
 
             return struct.unpack_from(state["fmt"], data, 1)[0]
 
     def update():
+        nonlocal display_end
+        if interrupted:
+            return
+        row = []
         for state in states:
+            if interrupted:
+                return
             try:
                 value = read_value(state)
                 now = time.monotonic() - start
                 state["samples"].append((now, value))
+                state["error"] = None
+                row.extend((now, value, ""))
 
-                state["info"].setText(f'{state["name"]}: Raw: {value:,}')
-
+            except InterruptedError:
+                return
             except Exception as exc:
-                state["info"].setText(
-                    f'{state["name"]}: Read error: {exc}'
-                )
+                state["error"] = str(exc)
+                row.extend((time.monotonic() - start, None, str(exc)))
 
-        # Keep both plots on the same time axis.
+        export_rows.append(tuple(row))
         now = time.monotonic() - start
+        display_end = now
+        cutoff = now - WINDOW_S
+        while export_rows and max(export_rows[0][::3]) < cutoff:
+            export_rows.popleft()
 
         for state in states:
             samples = state["samples"]
@@ -318,67 +361,167 @@ def plot_raw_single(bus):
                 times, values = zip(*samples)
                 state["curve"].setData(list(times), list(values))
 
-                # Preserve any error message from this polling cycle.
-                if "Read error:" not in state["info"].text():
-                    minimum = min(values)
-                    maximum = max(values)
+                minimum = min(values)
+                maximum = max(values)
 
-                    state["info"].setText(
-                        f'{state["name"]}: Raw: {values[-1]:,}     '
-                        f"Min: {minimum:,}     "
-                        f"Max: {maximum:,}     "
-                        f"Peak-to-peak: {maximum - minimum:,}"
-                    )
+                text = (
+                    f'{state["name"]}: Raw: {values[-1]:,}     '
+                    f"Min: {minimum:,}     "
+                    f"Max: {maximum:,}     "
+                    f"Peak-to-peak: {maximum - minimum:,}"
+                )
             else:
                 state["curve"].setData([], [])
+                text = f'{state["name"]}: Waiting for data...'
 
-            state["plot"].setXRange(
-                max(0.0, now - WINDOW_S),
-                max(WINDOW_S, now),
-                padding=0,
-            )
+            if state["error"] is not None:
+                text = (
+                    f'{state["name"]}: Read error: {state["error"]}'
+                )
+
+            state["info"].setText(text)
+
+        # Updating the first plot also updates all linked time axes.
+        states[0]["plot"].setXRange(
+            max(0.0, now - WINDOW_S),
+            max(WINDOW_S, now),
+            padding=0,
+        )
 
     timer = QtCore.QTimer(window)
     timer.timeout.connect(update)
     timer.start(POLL_MS)
 
+    def export_csv():
+        # Pause acquisition while choosing a path and writing the snapshot.
+        timer.stop()
+        now_at_export = display_end
+        try:
+            if not export_rows:
+                export_status.setText("No data to export yet.")
+                return
+
+            filename = "Ranger-" + datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv"
+            # Use a Qt dialog so the interrupt timer can reject it on Ctrl+C.
+            dialog = QtWidgets.QFileDialog(window, "Export current plotting window CSV")
+            dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog, True)
+            dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+            dialog.setNameFilter("CSV files (*.csv)")
+            dialog.setDefaultSuffix("csv")
+            dialog.selectFile(str(Path.cwd() / filename))
+            try:
+                if dialog.exec() != QtWidgets.QDialog.DialogCode.Accepted or interrupted:
+                    return
+                path = Path(dialog.selectedFiles()[0])
+            finally:
+                dialog.deleteLater()
+
+            # Match the displayed window at the moment Export was clicked.
+            # Blank any readings outside the window in a boundary-crossing scan.
+            cutoff = max(0.0, now_at_export - WINDOW_S)
+            rows = []
+            for scan in export_rows:
+                row = []
+                keep = False
+                for i in range(0, len(scan), 3):
+                    timestamp, value, error = scan[i:i + 3]
+                    if cutoff <= timestamp <= now_at_export:
+                        row.extend((timestamp, value, error))
+                        keep = True
+                    else:
+                        row.extend((None, None, ""))
+                if keep:
+                    rows.append(row)
+
+            header = []
+            for state in states:
+                name = state["name"]
+                header.extend((f"{name}_time_s", name, f"{name}_error"))
+
+            with path.open("w", newline="", encoding="utf-8") as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerow(header)
+                writer.writerows(rows)
+
+            export_status.setText(f"Exported {len(rows):,} scans to {path.name}")
+            print(f"CSV exported: {path} ({len(rows):,} scans)")
+        except Exception as exc:
+            export_status.setText(f"CSV export failed: {exc}")
+            print(f"CSV export failed: {exc}")
+        finally:
+            if not interrupted:
+                timer.start(POLL_MS)
+
+    export_button.clicked.connect(export_csv)
+
+    def handle_sigint(signum, frame):
+        # Avoid raising exceptions inside Qt callbacks. Exit after Qt unwinds.
+        nonlocal interrupted
+        interrupted = True
+
+    def check_interrupt():
+        if interrupted:
+            timer.stop()
+            modal = app.activeModalWidget()
+            if isinstance(modal, QtWidgets.QDialog) and modal is not window:
+                modal.reject()
+            window.reject()
+
+    # Regular Python callbacks allow SIGINT processing while Qt owns the loop.
+    interrupt_timer = QtCore.QTimer(window)
+    interrupt_timer.timeout.connect(check_interrupt)
+    previous_sigint = signal.signal(signal.SIGINT, handle_sigint)
+    interrupt_timer.start(50)
+
     try:
         window.exec()
     finally:
         timer.stop()
+        interrupt_timer.stop()
+        signal.signal(signal.SIGINT, previous_sigint)
         window.deleteLater()
+
+    if interrupted:
+        raise KeyboardInterrupt
 
 # ============================================================
 # Main
 # ============================================================
 
-with can.Bus(
-    interface="slcan",
-    channel=CHANNEL,
-    bitrate=BITRATE
-) as bus:
+def main():
+    with can.Bus(
+        interface="slcan",
+        channel=CHANNEL,
+        bitrate=BITRATE
+    ) as bus:
 
-    print("AceLight connected")
-    print("Commands: read <parameter>, write <parameter> <value>, exit")
+        print("AceLight connected")
+        print("Commands: read <parameter>, write <parameter> <value>, plot, exit")
 
-    while True:
+        while True:
 
-        cmd = input("> ").lower().split()
+            cmd = input("> ").lower().split()
 
-        if not cmd:
-            continue
+            if not cmd:
+                continue
 
-        if cmd[0] == "exit":
-            break
+            if cmd[0] == "exit":
+                break
 
-        if cmd[0] == "read" and len(cmd) == 2:
-            read_param(bus, cmd[1])
+            if cmd[0] == "read" and len(cmd) == 2:
+                read_param(bus, cmd[1])
 
-        elif cmd[0] == "write" and len(cmd) == 3:
-            write_param(bus, cmd[1], cmd[2])
+            elif cmd[0] == "write" and len(cmd) == 3:
+                write_param(bus, cmd[1], cmd[2])
 
-        elif cmd[0] == "plot":
-                    plot_raw_single(bus)
+            elif cmd[0] == "plot":
+                plot_raw_single(bus)
 
-        else:
-            print("Invalid command")
+            else:
+                print("Invalid command")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (KeyboardInterrupt, EOFError):
+        print("\nAceLight disconnected.")

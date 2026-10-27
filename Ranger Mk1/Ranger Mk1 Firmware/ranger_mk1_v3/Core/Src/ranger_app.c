@@ -19,6 +19,7 @@
 #include "INA229.h"
 #include "encoder.h"
 #include "MRAM.h"
+#include "PCAP02.h"
 
 
 /* =========================
@@ -61,11 +62,24 @@ static volatile HAL_StatusTypeDef mram_write_result = HAL_ERROR;
 static volatile HAL_StatusTypeDef mram_read_result  = HAL_ERROR;
 /* Global helper */
 
-/* Replace the comments with all 14 measured values per array. */
+/* Replace the comments with all 14 measured values per array.
+{sector0, ch0, ch1, ch2, ch3, ch4, ch5, sector1, ch11, ch10, ch9, ch8, ch7, ch6}
+*/
 static const encoder_cal_t encoder_cal =
 {
-    .ch_max = { 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28},
-    .ch_min = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
+    .ch_max = {
+        3210449, 5337679, 4547566, 4981811,
+        4102258, 4419746, 3912183, 3781551,
+        4660794, 5146233, 4416821, 4767150,
+        3766631, 4267547
+    },
+
+    .ch_min = {
+        3196261, 5167109, 4421927, 4840197,
+        3987906, 4283191, 3794032, 3759819,
+        4486354, 4891741, 4217246, 4550988,
+        3635845, 4128629
+    }
 };
 
 
@@ -140,12 +154,7 @@ void ranger_app_init(void)
   last_uptime_ms = now;
   last_heartbeat_ms = now;
   last_blink_ms = now;
-
-
-
 }
-
-
 
 
 void ranger_app_tick(void)
@@ -182,16 +191,37 @@ void ranger_app_tick(void)
   }
 
   /* Tasks scheduled to run every x miliseconds */
-  if ((now - last_sens_ms) >=100U)
+  if ((now - last_sens_ms) >=15U)
   {
       last_sens_ms = now;
 
-      float angle_rad;
 
-      int32_t status = encoder_get_angle(&encoder_cal, &angle_rad);
+      float angle_rad;
+      uint8_t angle_sector;
+      uint32_t raw_data[14];
+
+      int32_t status = encoder_get_angle(&encoder_cal, &angle_rad, &angle_sector, raw_data);
 
       g_param.debug = status;
       g_param.angle = (int32_t)lroundf(angle_rad * 1000000.0f);
+      g_param.sector =  angle_sector;
+
+      g_param.ch0 = raw_data[0];
+      g_param.ch1 = raw_data[1];
+      g_param.ch2 = raw_data[2];
+      g_param.ch3 = raw_data[3];
+      g_param.ch4 = raw_data[4];
+      g_param.ch5 = raw_data[5];
+      g_param.ch6 = raw_data[6];
+      g_param.ch7 = raw_data[7];
+      g_param.ch8 = raw_data[8];
+      g_param.ch9 = raw_data[9];
+      g_param.ch10 = raw_data[10];
+      g_param.ch11 = raw_data[11];
+      g_param.ch12 = raw_data[12];
+      g_param.ch13 = raw_data[13];
+
+
   }
 /**
 

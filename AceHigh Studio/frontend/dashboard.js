@@ -2,14 +2,14 @@
     "use strict";
 
     const WINDOW_SECONDS = 300;
-    const GROUPS = { angle: ["angle"], temperature: ["temperature"], power: ["voltage", "current"] };
+    const GROUPS = { angle: ["angle"], temperature: ["temperature"], power: ["voltage", "current"], fineangle: ["fine_angle"] };
     const signals = new Map(Object.values(GROUPS).flat().map(name => [name, { seen: null, error: false }]));
     const element = id => document.getElementById(id);
     let ready = false, active = false;
-    let temperaturePlot, powerPlot;
-    let temperatureData = [[], []], powerData = [[], [], []];
+    let temperaturePlot, powerPlot, fineAnglePlot;
+    let temperatureData = [[], []], powerData = [[], [], []], fineAngleData = [[], []];
     let lastVoltage = null, lastCurrent = null, lastWrapped = null;
-    let needleRotation = 0, dirtyTemperature = false, dirtyPower = false;
+    let needleRotation = 0, dirtyTemperature = false, dirtyPower = false, dirtyFineAngle = false;
 
     function state(group, text) {
         element(`${group}-state`).textContent = text;
@@ -49,7 +49,8 @@
         values.forEach((value, index) => data[index + 1].push(value));
         let remove = 0;
         while (remove < data[0].length && data[0][remove] < seconds - WINDOW_SECONDS) remove++;
-        remove = Math.max(remove, data[0].length - 2000);
+        const maxPoints = data === fineAngleData ? 15000 : 2000;
+        remove = Math.max(remove, data[0].length - maxPoints);
         if (remove > 0) data.forEach(series => series.splice(0, remove));
     }
 
@@ -58,7 +59,7 @@
         const entry = signals.get(message.signal);
         if (message.type === "metric_error") {
             entry.error = true;
-            const group = ["voltage", "current"].includes(message.signal) ? "power" : message.signal;
+            const group = Object.keys(GROUPS).find(group => GROUPS[group].includes(message.signal));
             element(`${group}-state`).title = `${message.signal}: ${message.message}`;
             refreshStates();
             return;
@@ -68,10 +69,24 @@
         if (message.signal === "angle") {
             if (!Number.isFinite(raw) || message.unit !== "deg" || message.source !== "pcap14") return;
         } else if (!Number.isSafeInteger(raw)) return;
+        if (message.signal === "fine_angle" &&
+            (message.unit !== "urad" || message.source !== "ranger" || message.parameter !== "angle")) return;
         entry.seen = performance.now();
         entry.error = false;
         switch (message.signal) {
             case "angle": drawAngle(raw); break;
+            case "fine_angle": {
+                // Firmware publishes signed radians * 1,000,000. Preserve
+                // the wraps; this is neither unwrapped nor divided by three.
+                const radians = raw / 1_000_000;
+                element("fineangle-value").textContent = radians.toFixed(6);
+                append(fineAngleData, seconds, radians);
+                dirtyFineAngle = true;
+                window.dispatchEvent(new CustomEvent("ace-parameter-sample", {
+                    detail: { parameter: "angle", value: raw },
+                }));
+                break;
+            }
             case "temperature":
                 const temperatureC = raw / 1000;
                 element("temperature-value").textContent = temperatureC.toFixed(1);
@@ -98,14 +113,15 @@
         active = true;
         temperatureData = [[], []];
         powerData = [[], [], []];
+        fineAngleData = [[], []];
         lastVoltage = lastCurrent = lastWrapped = null;
         needleRotation = 0;
         signals.forEach(entry => { entry.seen = null; entry.error = false; });
-        ["angle-value", "temperature-value", "dashboard-voltage", "dashboard-current"].forEach(id => element(id).textContent = "—");
+        ["angle-value", "temperature-value", "dashboard-voltage", "dashboard-current", "fineangle-value"].forEach(id => element(id).textContent = "—");
         element("angle-dial").dataset.hasValue = "false";
         element("angle-dial").setAttribute("aria-label", "Angle awaiting data");
         Object.keys(GROUPS).forEach(group => { state(group, "Waiting"); element(`${group}-state`).title = ""; });
-        dirtyTemperature = dirtyPower = true;
+        dirtyTemperature = dirtyPower = dirtyFineAngle = true;
     }
 
     function pause(label = "Paused") {
@@ -127,7 +143,7 @@
         const plot = new uPlot({
             width: Math.max(220, target.clientWidth), height: Math.max(130, target.clientHeight),
             legend: { show: false }, cursor: { show: false },
-            scales: { x: { time: false }, temperature: { auto: true }, voltage: { auto: true }, current: { auto: true } },
+            scales: { x: { time: false }, temperature: { auto: true }, voltage: { auto: true }, current: { auto: true }, fineangle: { auto: true } },
             series: [{}, ...series],
             axes: [{
                 stroke: "#9dafc4", font: "10px sans-serif", size: 32,
@@ -163,10 +179,14 @@
                 { label: "Voltage (V)", scale: "voltage", stroke: "#3ebbff", width: 1.8, points: { show: false } },
                 { label: "Current (A)", scale: "current", stroke: "#ffc06b", width: 1.8, points: { show: false } },
             ], [axis("voltage", 3, 1), axis("current", 1, 2)]);
+            fineAnglePlot = createPlot("fineangle-plot", [
+                { label: "Fine angle (rad)", scale: "fineangle", stroke: "#3ebbff", width: 1.8, points: { show: false } },
+            ], [{ ...axis("fineangle", 3, 2), label: "rad", size: 65 }]);
             ready = true;
             window.setInterval(() => {
                 if (dirtyTemperature) { temperaturePlot.setData(temperatureData); dirtyTemperature = false; }
                 if (dirtyPower) { powerPlot.setData(powerData); dirtyPower = false; }
+                if (dirtyFineAngle) { fineAnglePlot.setData(fineAngleData); dirtyFineAngle = false; }
                 refreshStates();
             }, 100);
         });

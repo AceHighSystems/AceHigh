@@ -1,5 +1,5 @@
 /* AceHigh Studio CSV export.
- * Captures the latest 5000 received samples per channel, ch0–ch6.
+ * Captures the latest 20000 received samples per signal, ch0–ch13 and angle.
  * Load after plot.js and app.js.
  *
  * Timestamps describe browser receipt of a WebSocket batch,
@@ -9,12 +9,12 @@
 (() => {
     "use strict";
 
-    const CHANNELS = Array.from(
+    const CHANNELS = [...Array.from(
         { length: 14 },
         (_, index) => `ch${index}`
-    );
+    ), "angle"];
 
-    // Match MAX_POINTS in plot.js.
+    // CSV history is independent of the plots' display history.
     const MAX_POINTS = 20000;
 
     const plot = window.acePlot;
@@ -45,27 +45,17 @@
     exportButton.className = "secondary";
     exportButton.textContent = "Export CSV";
     exportButton.title =
-        "Download ch0–ch13, up to 20000 samples per channel";
+        "Download ch0–ch13 and angle, up to 20000 samples per signal";
 
     exportButton.disabled = true;
 
     actions.appendChild(exportButton);
 
-    // Preserve the existing plotting function and capture its input.
-    const originalPush = plot.pushSamples;
-
-    plot.pushSamples = function (signal, samples, ...rest) {
-        const result = originalPush.call(
-            this,
-            signal,
-            samples,
-            ...rest
-        );
-
+    function capture(signal, samples) {
         const buffer = buffers.get(signal);
 
         if (!buffer || !samples.length) {
-            return result;
+            return;
         }
 
         const receivedMs =
@@ -96,8 +86,25 @@
 
         exportButton.disabled = false;
 
+    }
+
+    // Preserve the existing raw plotting function and capture its input.
+    const originalPush = plot.pushSamples;
+
+    plot.pushSamples = function (signal, samples, ...rest) {
+        const result = originalPush.call(this, signal, samples, ...rest);
+        capture(signal, samples);
         return result;
     };
+
+    // Capture only validated, active-run firmware angle samples. Export the
+    // signed parameter unchanged, rather than the displayed radians or dial.
+    window.addEventListener("ace-parameter-sample", event => {
+        const sample = event.detail;
+        if (sample?.parameter === "angle" && Number.isSafeInteger(sample.value)) {
+            capture("angle", [sample.value]);
+        }
+    });
 
     // Clear the CSV buffers whenever the existing scope is cleared.
     const originalClear = plot.clear;
@@ -170,7 +177,7 @@
 
         if (statusLine) {
             statusLine.textContent =
-                `Exported ${rows.length - 1} samples from ch0–ch13.`;
+                `Exported ${rows.length - 1} samples from ch0–ch13 and angle.`;
         }
     });
 })();

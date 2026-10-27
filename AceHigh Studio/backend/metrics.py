@@ -4,7 +4,8 @@ from __future__ import annotations
 import asyncio
 from encoder import AngleOutputFilter
 
-METRIC_RATES = {"temperature": 2.0, "voltage": 5.0, "current": 5.0}
+METRIC_RATES = {"temperature": 2.0, "voltage": 5.0, "current": 5.0,
+                "fine_angle": 50.0}
 
 
 async def stream_metrics(can_service, node, run_id, send, telemetry):
@@ -33,8 +34,13 @@ async def stream_metrics(can_service, node, run_id, send, telemetry):
             if loop.time() < due[signal]:
                 continue
             message = {"node": node, "run_id": run_id, "signal": signal}
+            # The existing "angle" metric is the computed mechanical dial.
+            # Keep the firmware parameter separate and preserve signed urad.
+            parameter = "angle" if signal == "fine_angle" else signal
+            if signal == "fine_angle":
+                message.update(parameter=parameter, source="ranger", unit="urad")
             try:
-                status, value = await can_service.read(node, signal)
+                status, value = await can_service.read(node, parameter)
                 if status != 2 or value is None:
                     raise ValueError(f"AceLight read status 0x{int(status):02X}")
                 message.update(type="metric_sample", value=int(value),

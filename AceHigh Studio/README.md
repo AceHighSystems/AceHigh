@@ -1,12 +1,12 @@
 # AceHigh Studio — live dashboard and command terminal
 
-The terminal sits below Node Control. It uses the existing AceLight CAN backend while all 14 raw encoder plots and the 20,000-sample/channel CSV export remain available. The former motor/microstep controls have been removed.
+The terminal sits below Node Control. It uses the existing AceLight CAN backend alongside all 14 raw encoder plots, a separate firmware fine-angle plot, and CSV export of up to 20,000 samples per signal. The former motor/microstep controls have been removed.
 
 ## Install and run
 
 Extract this archive and use the updated project as a whole. Restart the old backend first, then hard-refresh the browser to load the updated JavaScript.
 
-From `AceHigh-gui` with your existing Python environment activated:
+From the extracted `AceHigh Studio` folder with your existing Python environment activated:
 
 ```sh
 python3 -m pip install -r requirements.txt
@@ -21,15 +21,17 @@ No Ranger firmware changes are required for the terminal itself. Commands only a
 
 ## Live dashboard
 
-Three panels sit side by side above the 14 raw encoder plots on desktop:
+Three dashboard panels sit side by side on desktop:
 
 1. **Angle:** a 0–360° wrapping dial and a two-decimal reading in the range 0.00–359.99°.
 2. **Temperature:** latest reading in °C and a rolling trace.
 3. **Voltage / current:** both traces in one chart, with volts on the left axis and amps on the right. Blue is voltage; amber is current. Signed current is preserved.
 
-Run starts both the dashboard and the raw plots; Stop pauses both. Each new run clears the traces. Terminal commands remain available during acquisition. The plots retain the most recent 60 seconds, using CAN-read completion times relative to the start of the dashboard run. These times do not assert simultaneous sensor acquisition. In the combined plot, the latest available value of the other signal is held between its reads.
+A separate full-width **Fine angle** panel sits immediately below those three panels and above every raw-channel plot. It reads the Ranger's signed `angle` parameter (`0x44`, `I32`) directly. The firmware representation is radians multiplied by 1,000,000; the graph and current reading divide by 1,000,000 to display radians. Negative values and the approximately −π to +π wraps are preserved. The fine phase repeats three times per mechanical revolution and is not divided by three, unwrapped, direction-inverted or smoothed. This plot is independent of the computed mechanical-angle dial.
 
-The dial now shows an angle computed locally by the Python backend from `ch0` through `ch13`. Automatic acquisition never reads the Ranger's `angle` parameter. The dial receives floating-point degrees directly; the former angle-unit selector is removed.
+Run starts the dashboard, fine-angle plot and raw plots; Stop pauses them. Each new run clears the traces and CSV buffers. Terminal commands remain available during acquisition. The fine-angle plot retains up to 300 seconds / 15,000 points. Its time axis uses CAN-read completion times relative to the start of the dashboard run. These times do not assert simultaneous sensor acquisition. In the combined voltage/current plot, the latest available value of the other signal is held between its reads.
+
+The dial shows an angle computed locally by the Python backend from `ch0` through `ch13`. It receives floating-point degrees directly; the former angle-unit selector is removed. The new fine-angle plot separately polls the firmware's `angle` parameter; those readings do not feed the dial.
 
 Each acquisition pass builds a new 14-channel vector. Only a complete pass with successful, unsigned 24-bit channel results is decoded. A failed channel is never filled from a previous pass. The reconstruction reuses the raw reads already feeding the plots, without another set of channel requests.
 
@@ -63,7 +65,9 @@ This is an offline operation and never commands the motor. It overwrites `backen
 
 Voltage and current are divided by 1000 for V and A, matching the supplied firmware's millivolt/milliamp values. Temperature is displayed in °C, matching its integer-degree value. The Node Control voltage readout now applies the same millivolt conversion.
 
-The computed angle follows successful complete raw scans, with dashboard delivery capped at approximately 50 updates/s. Requested polling rates are 2 Hz for temperature and 5 Hz each for voltage and current. All requests share the existing CAN lock with raw acquisition and terminal commands; actual rates depend on CAN response time and bus load. The cards distinguish Waiting, Live, Stale, Paused, Disconnected and unavailable/partial data. Failed reads use a one-second retry interval. CSV export still contains the 14 raw encoder channels.
+The computed angle follows successful complete raw scans, with dashboard delivery capped at approximately 50 updates/s. Requested polling rates are 50 Hz for the firmware fine-angle parameter, 2 Hz for temperature and 5 Hz each for voltage and current. All requests share the existing CAN lock with raw acquisition and terminal commands; actual rates depend on CAN response time and bus load. The cards distinguish Waiting, Live, Stale, Paused, Disconnected and unavailable/partial data. Failed reads use a one-second retry interval.
+
+**Export CSV** includes ch0–ch13 and the firmware parameter under the exact signal name **`angle`**. The existing long-format columns remain `channel,sample_index,raw_value,host_receive_elapsed_s,host_receive_utc`. Rows with `channel=angle` contain the unchanged signed integer in microradians, not displayed radians and not the computed mechanical dial angle. Each signal retains its latest 20,000 samples and has its own sample index. Angle and raw-channel rows are not simultaneous scans; their browser receipt timestamps provide the common time reference. Export remains available after Stop and resets on the next Run. No synthetic angle samples are exported after a failed read.
 
 The computed-angle integration adds `backend/encoder.py`, `backend/calibrated_encoder.py`, `backend/encoder_calibration.json` and SciPy to the requirements. Install the updated requirements before starting the backend. Replace the project together, restart the backend and hard-refresh Studio so the matching backend and frontend load.
 
@@ -119,7 +123,7 @@ python3 -m pip install -r requirements-dev.txt
 python3 -m pytest -q tests
 ```
 
-All **32 automated tests pass on Python 3.12**. A JavaScript DOM check also verifies that the existing dial accepts the angle-message format and crosses zero using the short arc. No live hardware was connected.
+All **38 automated tests pass on Python 3.12**. Tests cover signed firmware-angle values, the separate computed mechanical angle, unsupported-parameter recovery, and simultaneous raw-channel acquisition and terminal access. A Chromium browser check with a simulated CAN peer also verified the new panel's position, signed radian display, raw `angle` CSV rows, export after Stop, reset on a new run, error recovery, 15,000-point plot / 20,000-sample CSV retention, and desktop/mobile layout. No live hardware was connected.
 
 The regression suite includes small raw subsets from all three supplied 18 October captures. It checks acceptance, stationary stability, full-turn continuity and agreement with the constant-speed reference. Reverse-order replay verifies that the decoder does not depend on prior travel. Additional checks cover the live telemetry path, complete-scan handling, synthetic full-turn coverage, invalid data and optional smoothing. Smoothing tests request 150 ms explicitly so they also work with the supplied unsmoothed default.
 

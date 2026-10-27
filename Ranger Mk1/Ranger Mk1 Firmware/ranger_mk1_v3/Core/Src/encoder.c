@@ -8,6 +8,45 @@
 #include "PCAP02.h"
 #include <stdint.h>
 #include <math.h>
+#include <stddef.h>
+#include <float.h>
+#include "encoder_sector.h"
+
+const encoder_sector_cal_t encoder_sector_cal_20261025 = { .point = {
+    { /* sector 0 */
+        {970327.834f, 1557877.812f},
+        {972274.652f, 1555152.843f},
+        {967102.590f, 1558520.691f},
+        {961673.363f, 1562000.906f},
+        {956981.762f, 1564911.461f},
+        {956496.261f, 1567731.252f},
+        {960449.204f, 1564569.273f},
+        {962231.858f, 1563689.084f},
+        {960538.596f, 1569293.406f},
+    },
+    { /* sector 1 */
+        {960538.596f, 1569293.406f},
+        {965295.750f, 1567357.993f},
+        {962174.974f, 1570258.873f},
+        {957238.397f, 1575773.622f},
+        {950667.671f, 1578874.402f},
+        {947499.086f, 1580562.634f},
+        {950961.515f, 1574545.194f},
+        {957402.412f, 1563701.124f},
+        {962248.755f, 1556846.175f},
+    },
+    { /* sector 2 */
+        {962248.755f, 1556846.175f},
+        {965111.934f, 1556330.485f},
+        {963014.845f, 1558454.420f},
+        {960004.796f, 1562475.579f},
+        {953794.227f, 1566479.831f},
+        {949682.261f, 1571350.284f},
+        {954530.847f, 1566725.258f},
+        {962308.170f, 1563350.600f},
+        {970327.834f, 1557877.812f},
+    },
+} };
 
 
 /**
@@ -80,9 +119,7 @@ int32_t encoder_get_raw(uint32_t raw[14])
   * @retval -1
   */
 
-int32_t encoder_get_angle(const encoder_cal_t *cal, float *angle_rad){
-
-	uint32_t raw_data[14];
+int32_t encoder_get_angle(const encoder_cal_t *cal, float *angle, uint8_t *sector, uint32_t *raw_data){
 
 	float ch_norm[14];
 
@@ -132,7 +169,95 @@ int32_t encoder_get_angle(const encoder_cal_t *cal, float *angle_rad){
 
 	    float fine_rad_angle = atan2f(sin_norm, cos_norm);
 
-	    *angle_rad =  fine_rad_angle; /* returns angle on the form -pi to + pi */
+	    *angle  = fine_rad_angle;
+	    *sector = UINT8_MAX;  /* 255 means sector unavailable. */
+
+	    int32_t status = encoder_sector_get(
+	        &encoder_sector_cal_20261025,
+	        raw_data,
+			fine_rad_angle,              /* Existing fine angle: -pi to +pi */
+	        sector
+	    );
+
+
 	}
-	return status;
+}
+
+
+
+int32_t encoder_sector_get(const encoder_sector_cal_t *cal,
+                          const uint32_t raw[14],
+                          float fine_angle_rad,
+                          uint8_t *sector)
+{
+    if (cal == NULL || raw == NULL || sector == NULL ||
+        !isfinite(fine_angle_rad) ||
+        fine_angle_rad < -ENCODER_SECTOR_PI - 0.00001f ||
+        fine_angle_rad > ENCODER_SECTOR_PI + 0.00001f) {
+        return ENCODER_SECTOR_INVALID;
+    }
+
+    for (uint32_t i = 0U; i < 14U; ++i) {
+        if (raw[i] == 0U || raw[i] > 0x00FFFFFFU) {
+            return ENCODER_SECTOR_INVALID;
+        }
+    }
+
+    /* Per-chip reference correction, using existing fine electrodes.
+     * 0.5 * mean(six channels) = sum(six channels) / 12.
+     * With valid 24-bit inputs the uint32_t sums cannot overflow. */
+    uint32_t sum_a = 0U;
+    uint32_t sum_b = 0U;
+    for (uint32_t i = 1U; i <= 6U; ++i) {
+        sum_a += raw[i];
+        sum_b += raw[i + 7U];
+    }
+    float a = (float)raw[0] - (float)sum_a * (1.0f / 12.0f);
+    float b = (float)raw[7] - (float)sum_b * (1.0f / 12.0f);
+
+    /* Permit only the tiny endpoint excess from integer urad conversion. */
+    if (fine_angle_rad < -ENCODER_SECTOR_PI) {
+        fine_angle_rad = -ENCODER_SECTOR_PI;
+    }
+    if (fine_angle_rad > ENCODER_SECTOR_PI) {
+        fine_angle_rad = ENCODER_SECTOR_PI;
+    }
+    float position = (fine_angle_rad + ENCODER_SECTOR_PI) *
+                     ((float)ENCODER_SECTOR_BINS / ENCODER_SECTOR_TWO_PI);
+    uint32_t bin = (uint32_t)position;
+    if (bin >= ENCODER_SECTOR_BINS) {
+        bin = ENCODER_SECTOR_BINS - 1U;
+    }
+    float fraction = position - (float)bin;
+
+    float best = FLT_MAX;
+    float second = FLT_MAX;
+    uint8_t selected = 0U;
+    for (uint8_t k = 0U; k < 3U; ++k) {
+        float expected_a = cal->point[k][bin][0] + fraction *
+            (cal->point[k][bin + 1U][0] - cal->point[k][bin][0]);
+        float expected_b = cal->point[k][bin][1] + fraction *
+            (cal->point[k][bin + 1U][1] - cal->point[k][bin][1]);
+        float ea = a - expected_a;
+        float eb = b - expected_b;
+        float error = ea * ea + eb * eb;
+        if (error < best) {
+            second = best;
+            best = error;
+            selected = k;
+        } else if (error < second) {
+            second = error;
+        }
+    }
+    if (!isfinite(best) || !isfinite(second)) {
+        return ENCODER_SECTOR_INVALID;
+    }
+    if (best > ENCODER_SECTOR_MAX_ERROR_SQ) {
+        return ENCODER_SECTOR_OUT_OF_CALIBRATION;
+    }
+    if (second - best < ENCODER_SECTOR_MIN_MARGIN_SQ) {
+        return ENCODER_SECTOR_AMBIGUOUS;
+    }
+    *sector = selected;
+    return ENCODER_SECTOR_OK;
 }

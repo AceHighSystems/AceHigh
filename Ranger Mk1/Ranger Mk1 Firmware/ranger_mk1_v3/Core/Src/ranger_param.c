@@ -78,6 +78,7 @@ const ace_parameter_t ranger_param_table[] =
 	{ PARAM_RESET,		     	   &g_param.reset,         		   ACE_PARAM_U8,  ACE_PARAM_RW },
 	{ PARAM_TEST,		     	   &g_param.test,         		   ACE_PARAM_U32, ACE_PARAM_RW },
 	{ PARAM_DEBUG,		  	       &g_param.debug,                 ACE_PARAM_I32, ACE_PARAM_RO },
+	{ PARAM_SECTOR,		  	       &g_param.sector,                ACE_PARAM_U8,  ACE_PARAM_RO },
 
     { PARAM_RAW_CH0,		 	   &g_param.ch0,                   ACE_PARAM_U32, ACE_PARAM_RO },
 	{ PARAM_RAW_CH1,		  	   &g_param.ch1,                   ACE_PARAM_U32, ACE_PARAM_RO },
