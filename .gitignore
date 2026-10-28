@@ -1,5 +1,3 @@
-cat >> .gitignore <<'EOF'
-
 # macOS metadata
 .DS_Store
 ._*
@@ -13,4 +11,3 @@ Desktop.ini
 *.swp
 *.swo
 *~
-EOF
