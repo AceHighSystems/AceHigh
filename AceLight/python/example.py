@@ -23,11 +23,17 @@ with can.Bus(
 
     ace = acelight.Client(HOST_ID, bus)
 
-    status = ace.write(NODE_ID, r.profile_velocity, 1000)
+    status = ace.write(NODE_ID, r.profile_velocity, 1000) # In steps/second 
     print(f"Write status: 0x{status:02X}")
 
-    status = ace.write(NODE_ID, r.mode, 1)
+    status = ace.write(NODE_ID, r.motor_current, 400) # In steps/second 
     print(f"Write status: 0x{status:02X}")
 
-    status = ace.write(NODE_ID, r.step_move, 10000)
+    status = ace.write(NODE_ID, r.microstep, 8) # Set full step or microstep level.
+    print(f"Write status: 0x{status:02X}")
+
+    status = ace.write(NODE_ID, r.mode, 1) # open-loop mode
+    print(f"Write status: 0x{status:02X}")
+
+    status = ace.write(NODE_ID, r.step_move, -10000) # Move x amount of steps in positive or negative direction
     print(f"Write status: 0x{status:02X}")
