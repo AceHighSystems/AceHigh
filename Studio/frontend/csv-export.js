@@ -1,5 +1,6 @@
 /* AceHigh Studio CSV export.
- * Captures the latest 20000 received samples per signal, ch0–ch13 and angle.
+ * Captures the latest 20000 received samples per signal, including the three
+ * firmware parameters and ch0–ch13.
  * Load after plot.js and app.js.
  *
  * Timestamps describe browser receipt of a WebSocket batch,
@@ -9,10 +10,10 @@
 (() => {
     "use strict";
 
-    const CHANNELS = [...Array.from(
+    const CHANNELS = ["angle", "fine_angle", "sector", ...Array.from(
         { length: 14 },
         (_, index) => `ch${index}`
-    ), "angle"];
+    )];
 
     // CSV history is independent of the plots' display history.
     const MAX_POINTS = 20000;
@@ -45,13 +46,13 @@
     exportButton.className = "secondary";
     exportButton.textContent = "Export CSV";
     exportButton.title =
-        "Download ch0–ch13 and angle, up to 20000 samples per signal";
+        "Download angle, fine_angle, sector and ch0–ch13, up to 20000 samples per signal";
 
     exportButton.disabled = true;
 
     actions.appendChild(exportButton);
 
-    function capture(signal, samples) {
+    function capture(signal, samples, plottedValue = null, unit = "count") {
         const buffer = buffers.get(signal);
 
         if (!buffer || !samples.length) {
@@ -71,6 +72,8 @@
             buffer.push({
                 index: nextIndex++,
                 value: Number(samples[i]),
+                plottedValue: plottedValue ?? Number(samples[i]),
+                unit,
                 receivedMs,
             });
         }
@@ -97,12 +100,13 @@
         return result;
     };
 
-    // Capture only validated, active-run firmware angle samples. Export the
-    // signed parameter unchanged, rather than the displayed radians or dial.
+    // Capture each validated, active-run firmware read once. The dial and
+    // degree plot share one angle sample, so no duplicate CSV row is needed.
     window.addEventListener("ace-parameter-sample", event => {
         const sample = event.detail;
-        if (sample?.parameter === "angle" && Number.isSafeInteger(sample.value)) {
-            capture("angle", [sample.value]);
+        if (["sector", "fine_angle", "angle"].includes(sample?.parameter) &&
+            Number.isSafeInteger(sample.value)) {
+            capture(sample.parameter, [sample.value], sample.plottedValue, sample.unit);
         }
     });
 
@@ -126,7 +130,7 @@
     exportButton.addEventListener("click", () => {
         const rows = [
             "channel,sample_index,raw_value," +
-            "host_receive_elapsed_s,host_receive_utc",
+            "host_receive_elapsed_s,host_receive_utc,value,unit",
         ];
 
         for (const channel of CHANNELS) {
@@ -140,6 +144,8 @@
                     sample.value,
                     elapsedSeconds.toFixed(6),
                     new Date(sample.receivedMs).toISOString(),
+                    sample.plottedValue,
+                    sample.unit,
                 ].join(","));
             }
         }
@@ -162,7 +168,7 @@
         const link = document.createElement("a");
 
         link.href = url;
-        link.download = `AceHigh-PCAP-A-${timestamp}.csv`;
+        link.download = `AceHigh-Studio-${timestamp}.csv`;
 
         document.body.appendChild(link);
         link.click();
@@ -177,7 +183,7 @@
 
         if (statusLine) {
             statusLine.textContent =
-                `Exported ${rows.length - 1} samples from ch0–ch13 and angle.`;
+                `Exported ${rows.length - 1} samples from angle, fine_angle, sector and ch0–ch13.`;
         }
     });
 })();

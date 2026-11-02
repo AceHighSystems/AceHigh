@@ -67,8 +67,14 @@ static volatile HAL_StatusTypeDef mram_read_result  = HAL_ERROR;
 */
 static const encoder_cal_t encoder_cal =
 {
-    .ch_max = {3214815, 5331886, 4528104, 4961084, 4093387, 4418432, 3904771, 3808239, 4666956, 5204089, 4406876, 4728601, 3745207, 4252693},
-    .ch_min = {3190538, 5144615, 4402249, 4816330, 3968690, 4260251, 3774827, 3749920, 4467858, 4869690, 4197838, 4525214, 3616111, 4105331}
+    .ch_max = {
+        3199122, 5293713, 4519063, 4953207, 4078234, 4388801, 3883239,
+        3770949, 4601995, 5052112, 4343706, 4691634, 3733439, 4233745
+    },
+    .ch_min = {
+        3184156, 5156414, 4412766, 4831252, 3981226, 4276275, 3788075,
+        3749875, 4476663, 4881780, 4208136, 4541444, 3631086, 4123413
+    }
 };
 
 
@@ -91,6 +97,7 @@ static void ranger_app_check_step_move(void);
 static void ranger_step_move(int32_t steps);
 static void ranger_app_check_step_status(void);
 static void ranger_stop_step_timers(void);
+static void ranger_app_check_motor_parameters(void);
 /* =========================
    Implementation
    ========================= */
@@ -167,6 +174,7 @@ void ranger_app_tick(void)
   ranger_app_check_mode();
   ranger_app_check_step_status();
   ranger_app_check_step_move();
+  ranger_app_check_motor_parameters(); /* check to se if motor parameters were updated, update driver accordingly. */
 
   /* Tasks scheduled to run every x miliseconds */
   if ((now - last_slow_sens_ms) >=250U)
@@ -179,20 +187,21 @@ void ranger_app_tick(void)
   }
 
   /* Tasks scheduled to run every x miliseconds */
-  if ((now - last_sens_ms) >=15U)
+  if ((now - last_sens_ms) >=2U)
   {
       last_sens_ms = now;
 
-
-      float angle_rad;
+      float fine_angle;
+      float angle;
       uint8_t angle_sector;
       uint32_t raw_data[14];
 
-      int32_t status = encoder_get_angle(&encoder_cal, &angle_rad, &angle_sector, raw_data);
+      int32_t status = encoder_get_angle(&encoder_cal, &fine_angle, &angle, &angle_sector, raw_data);
 
       g_param.debug = status;
-      g_param.angle = (int32_t)lroundf(angle_rad * 1000000.0f);
-      g_param.sector =  angle_sector;
+      g_param.fine_angle = (int32_t)lroundf(fine_angle * 1000000.0f);
+      g_param.angle      = (int32_t)lroundf(angle * 1000.0f); /* get the angle in milli degrees */
+      g_param.sector     =  angle_sector;
 
       g_param.ch0 = raw_data[0];
       g_param.ch1 = raw_data[1];
@@ -564,6 +573,43 @@ static void ranger_step_move(int32_t steps)
      */
     __set_PRIMASK(primask);
 }
+
+
+/* Check to see if motor parameters were updated, if change detected update with the latest settings.
+ */
+void ranger_app_check_motor_parameters(void){
+
+    typedef struct {
+        uint32_t microstep;
+        uint32_t motor_current;
+    } motor_parameters_t;
+
+    static motor_parameters_t previous; /* Retain value between function calls */
+
+    /* Grab the current parameter values. */
+    const motor_parameters_t current = {
+        .microstep         = g_param.microstep,
+        .motor_current     = g_param.motor_current,
+
+    };
+
+    /* Check whether any parameter has changed. */
+
+    if(current.microstep != previous.microstep){
+
+    	drv8462_set_microstep(current.microstep);
+    }
+
+    if(current.motor_current!= previous.motor_current){
+
+    	drv8462_set_current(current.motor_current); /* The parameter unit is mA */
+    }
+
+    /* Save this snapshot for the next check. */
+    previous = current;
+}
+
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {

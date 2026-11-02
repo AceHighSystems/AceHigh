@@ -1,8 +1,9 @@
-../Core/Src/DRV8462.c:103:13:drv8462_select	1
-../Core/Src/DRV8462.c:111:13:drv8462_deselect	1
-../Core/Src/DRV8462.c:124:16:drv8462_write_register	2
-../Core/Src/DRV8462.c:155:16:drv8462_read_register	2
-../Core/Src/DRV8462.c:191:6:drv8462_init	1
-../Core/Src/DRV8462.c:253:6:drv8462_set_direction	2
-../Core/Src/DRV8462.c:275:6:drv8462_step_once	2
-../Core/Src/DRV8462.c:305:6:drv8462_step_once_HW	3
+../Core/Src/DRV8462.c:106:13:drv8462_select	1
+../Core/Src/DRV8462.c:114:13:drv8462_deselect	1
+../Core/Src/DRV8462.c:127:16:drv8462_write_register	2
+../Core/Src/DRV8462.c:158:16:drv8462_read_register	2
+../Core/Src/DRV8462.c:194:6:drv8462_init	1
+../Core/Src/DRV8462.c:256:6:drv8462_set_direction	2
+../Core/Src/DRV8462.c:278:6:drv8462_step_once	2
+../Core/Src/DRV8462.c:306:6:drv8462_set_current	3
+../Core/Src/DRV8462.c:322:6:drv8462_set_microstep	2

@@ -5,6 +5,9 @@
 #include "main.h"
 #include "stm32g4xx_hal.h"
 
+#include <math.h>
+#include <stdint.h>
+
 /*
  * This file assumes that CubeMX has already created and initialized hspi1.
  */
@@ -212,8 +215,8 @@ void drv8462_init(void)
      * Internal VREF.
      *
      */
-    drv8462_write_register(0x10, 0x12);
-    drv8462_write_register(0x0E, 0x0A); // current limit - low torque/current for bring-up
+    drv8462_write_register(0x10, 0x12); /* Internal 3.3 volt referenece.
+    drv8462_write_register(0x0E, 0x0A); /* Current limit - low torque/current for bring-up */
 
     /*
      * Configure CTRL2:
@@ -294,28 +297,50 @@ void drv8462_step_once(uint8_t direction_is_forward)
     drv8462_write_register(DRV8462_REG_CTRL2, ctrl2_value);
 }
 
-/* ============================================================
- * Single-step command over HW interface
- * ============================================================
+
+/*
+ *  Set the nominal winding current of the motor driver
+ *  For the DDV chip with 10A full scale current the following conversion applies.
+ *  The current is adjustable in steps of 39.0625mA equal to 256 steps for 3.3 volt reference.
  */
-/* DRV8462:
- *  PB12 = CS (M0), PB13 = SLCK (M1), PB14 = MISO (Decay1), PB15 = MOSI (Decay2), PB2 = MODE
- *  PB2 = MODE, PB3 = STEP, PB4 = DIR */
+void drv8462_set_current(uint32_t current_mA){
 
-void drv8462_step_once_HW(uint8_t direction)
-{
-	if(direction == 1){
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET); // direction 1
-	}
-	if(direction == 0){
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET); // direction 0
-	}
+	int32_t reg_value = (int32_t)lroundf( ((float)current_mA / 39.0625f) - 1.0f);
 
-	// Toggle the STEP pin with PWM output
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
-	HAL_Delay(5);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);
-	HAL_Delay(5);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
+    if (reg_value < 0)
+        reg_value = 0;
+
+    else if (reg_value > 255)
+        reg_value = 255;
+
+	drv8462_write_register(0x0E, (uint8_t)reg_value); // current limit - low torque/current for bring-up
+}
+
+/*
+ *  Set the microstep level from full step mode down to 1/256 micro stepping.
+ */
+void drv8462_set_microstep(uint8_t step_level){
+
+    static const uint8_t microstep_table[9] = {
+        0x00,   /* Full step 100% current */
+        0x03,   /* 1/2 step */
+        0x04,   /* 1/4 step */
+        0x05,   /* 1/8 step */
+        0x06,   /* 1/16 step */
+        0x07,   /* 1/32 step */
+		0x08,   /* 1/64 step */
+		0x09,   /* 1/128 step */
+		0x0A,   /* 1/256 step */
+    };
+
+    /* Clamp index to 8 */
+    if(step_level > 8U){
+    	step_level = 8U;
+    }
+
+    drv8462_write_register(0x05, microstep_table[step_level]);
 
 }
+
+
+

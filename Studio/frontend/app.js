@@ -86,6 +86,7 @@
         });
 
         ws.addEventListener("close", () => {
+            window.acePlot?.pause("Disconnected");
             window.aceDashboard?.pause("Disconnected");
             terminal.setConnected(false);
             nodeInput.disabled = false;
@@ -126,6 +127,7 @@
             terminal.handleMessage(message);
             if (["metric_sample", "metric_error"].includes(message.type)) {
                 if (scopeRunning && message.run_id === runId && message.node === nodeId()) {
+                    window.acePlot?.handleParameterMessage(message);
                     window.aceDashboard?.handleMessage(message);
                 }
                 return;
@@ -296,7 +298,7 @@
                 scopeRunning = true;
                 nodeInput.disabled = true;
 
-                statusLine.textContent = "Starting raw scope...";
+                statusLine.textContent = "Starting parameter and raw scopes...";
 
                 const node = nodeId();
 
@@ -324,13 +326,14 @@
                     });
                 }
                 send({ type: "metrics_stop" });
+                window.acePlot.pause("Paused");
                 window.aceDashboard.pause("Paused");
 
                 scopeRunning = false;
                 nodeInput.disabled = false;
                 subscribedCount = 0;
 
-                statusLine.textContent = "Raw scope stopped";
+                statusLine.textContent = "Scope stopped";
             });
     }
 

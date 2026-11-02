@@ -229,6 +229,11 @@ button.secondary {
     font-variant-numeric: tabular-nums;
 }
 
+.scope-channel[data-signal="ch0"] .scope-channel-value,
+.scope-channel[data-signal="ch7"] .scope-channel-value {
+    color: #ff69b4;
+}
+
 .scope-plot {
     position: relative;
     flex: 1 1 auto;
@@ -323,10 +328,12 @@ button:focus-visible, input:focus-visible, .terminal-output:focus-visible { outl
 .current-key { color: #ffc06b; }
 .raw-scope-label { color: var(--text); font-size: 11px; font-weight: 650; margin-bottom: 12px; }
 .raw-scope-label span { color: var(--muted); margin-left: 6px; font-weight: 400; }
-.fine-angle-card { min-height: 0; margin-bottom: 24px; }
-.fine-angle-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; padding: 10px 3px; }
-.fine-angle-reading { color: #3ebbff; justify-content: flex-start; }
-.fine-angle-summary .subtle { font-size: 11px; }
-.fine-angle-plot { width: 100%; height: 230px; min-width: 0; overflow: hidden; }
+.parameter-scope-grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: 230px; gap: 12px; margin-bottom: 24px; }
+.parameter-scope .scope-channel-header { height: 38px; flex-basis: 38px; gap: 12px; }
+.parameter-scope .scope-channel-value { margin-left: auto; font-size: 12px; }
+.parameter-scope .metric-state { flex-shrink: 0; }
+.parameter-scope[data-state="live"] .metric-state { color: var(--accent); }
+.parameter-scope[data-state="unavailable"] .metric-state { color: #ff9b9b; }
+@media (max-width: 600px) { .scope-header { flex-wrap: wrap; } .scope-actions { flex-wrap: wrap; } }
 @media (max-width: 1100px) and (min-width: 801px) { .dashboard-grid { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .dashboard-grid { grid-template-columns: 1fr; } .dashboard-reading strong { font-size: 25px; } .dial-reading strong { font-size: 30px; } }

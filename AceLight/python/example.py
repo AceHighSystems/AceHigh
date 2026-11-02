@@ -9,11 +9,11 @@ from acelight.modules import ranger_mk1_param as r
 
 # Next take a look at the Ranger Mk1 datasheet for more details.
 
-CHANNEL = "/dev/cu.usbmodem2080317458421"  # Replace with your adapter's serial port.
+CHANNEL = "/dev/cu.usbmodem2080317458421"  # Replace with your CAN adapter's serial port.
 BITRATE = 1_000_000
 
-NODE_ID = 2
 HOST_ID = 1
+NODE_ID = 2
 
 with can.Bus(
     interface="slcan",  # Replace with OS supported interface

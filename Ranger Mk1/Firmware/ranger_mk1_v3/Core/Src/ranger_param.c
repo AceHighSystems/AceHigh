@@ -25,11 +25,12 @@ ranger_param_t g_param =
     /* Ranger parameters */
     .reset           = 0U,
     .mode            = 0U,
-    .step_move       = 0,
-    .target_position = 0,
+    .step_move       = 0U,
+    .target_position = 0U,
     .microstep       = 1U,
     .led1            = 1U,
-	.debug		     = 1
+	.debug		     = 1U,
+	.fine_angle		 = 0U
 };
 
 
@@ -60,25 +61,34 @@ const ace_parameter_t ranger_param_table[] =
 
 	/* Device specific parameters - Ranger Mk1 */
 
-    { PARAM_VOLTAGE,   		 	   &g_param.voltage,        	   ACE_PARAM_I32, ACE_PARAM_RO },
-	{ PARAM_CURRENT,  		  	   &g_param.current,        	   ACE_PARAM_I32, ACE_PARAM_RO },
-	{ PARAM_TEMPERATURE,  	  	   &g_param.temperature,           ACE_PARAM_I32, ACE_PARAM_RO },
-
     { PARAM_MODE,     	           &g_param.mode,                  ACE_PARAM_U8,  ACE_PARAM_RW },
 	{ PARAM_STEP_MOVE,       	   &g_param.step_move,             ACE_PARAM_I32, ACE_PARAM_RW },
 	{ PARAM_TARGET_POSITION,  	   &g_param.target_position,       ACE_PARAM_I32, ACE_PARAM_RW },
 	{ PARAM_POSITION,         	   &g_param.position,              ACE_PARAM_I32, ACE_PARAM_RO },
 	{ PARAM_ANGLE,           	   &g_param.angle,                 ACE_PARAM_I32, ACE_PARAM_RO },
+
 	{ PARAM_PROFILE_VELOCITY, 	   &g_param.profile_velocity,      ACE_PARAM_U32, ACE_PARAM_RW },
 	{ PARAM_PROFILE_ACCELERATION,  &g_param.profile_acceleration,  ACE_PARAM_U32, ACE_PARAM_RW },
 	{ PARAM_PROFILE_DECELERATION,  &g_param.profile_deceleration,  ACE_PARAM_U32, ACE_PARAM_RW },
     { PARAM_MICROSTEP,       	   &g_param.microstep,             ACE_PARAM_U32, ACE_PARAM_RW },
+	{ PARAM_MOTOR_CURRENT,         &g_param.motor_current,         ACE_PARAM_U32, ACE_PARAM_RW },
+	{ PARAM_MOTOR_CURRENT_MAX,     &g_param.motor_current_max,     ACE_PARAM_U32, ACE_PARAM_RW },
+	{ PARAM_MOTOR_CURRENT_MIN,     &g_param.motor_current_min,     ACE_PARAM_U32, ACE_PARAM_RW },
+	{ PARAM_MOTOR_FULL_STEP,       &g_param.motor_full_step,       ACE_PARAM_U32, ACE_PARAM_RW },
 
+
+    { PARAM_VOLTAGE,   		 	   &g_param.voltage,        	   ACE_PARAM_I32, ACE_PARAM_RO },
+	{ PARAM_CURRENT,  		  	   &g_param.current,        	   ACE_PARAM_I32, ACE_PARAM_RO },
+	{ PARAM_TEMPERATURE,  	  	   &g_param.temperature,           ACE_PARAM_I32, ACE_PARAM_RO },
+
+	{ PARAM_CALIBRATION,		   &g_param.calibration,           ACE_PARAM_U8,  ACE_PARAM_RW },
     { PARAM_LED_PA1,		 	   &g_param.led1,         		   ACE_PARAM_U8,  ACE_PARAM_RW },
+	{ PARAM_UPTIME,		 	       &g_param.uptime,         	   ACE_PARAM_U32, ACE_PARAM_RW },
 	{ PARAM_RESET,		     	   &g_param.reset,         		   ACE_PARAM_U8,  ACE_PARAM_RW },
 	{ PARAM_TEST,		     	   &g_param.test,         		   ACE_PARAM_U32, ACE_PARAM_RW },
 	{ PARAM_DEBUG,		  	       &g_param.debug,                 ACE_PARAM_I32, ACE_PARAM_RO },
 	{ PARAM_SECTOR,		  	       &g_param.sector,                ACE_PARAM_U8,  ACE_PARAM_RO },
+	{ PARAM_FINE_ANGLE,		  	   &g_param.fine_angle,            ACE_PARAM_I32, ACE_PARAM_RO },
 
     { PARAM_RAW_CH0,		 	   &g_param.ch0,                   ACE_PARAM_U32, ACE_PARAM_RO },
 	{ PARAM_RAW_CH1,		  	   &g_param.ch1,                   ACE_PARAM_U32, ACE_PARAM_RO },

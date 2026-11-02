@@ -12,44 +12,43 @@
 #include <float.h>
 #include "encoder_sector.h"
 
-const encoder_sector_cal_t encoder_sector_cal_20261027 = { .point = {
 
+const float TWO_PI = 6.28318530718f;
+
+const encoder_sector_cal_t encoder_sector_cal_20261028 = { .point = {
     { /* sector 0 */
-        {976117.819f, 1556889.095f},
-        {978261.992f, 1555063.741f},
-        {974759.768f, 1557340.918f},
-        {970272.896f, 1561749.474f},
-        {962811.065f, 1567210.470f},
-        {960778.416f, 1574708.748f},
-        {971302.830f, 1568688.875f},
-        {967807.675f, 1583316.053f},
-        {966838.985f, 1595646.181f},
+        {968314.564f, 1566380.537f},
+        {969969.832f, 1565636.456f},
+        {968155.842f, 1567169.652f},
+        {965454.336f, 1570233.632f},
+        {960507.004f, 1574120.373f},
+        {957585.314f, 1577837.595f},
+        {961908.749f, 1573710.363f},
+        {961781.571f, 1575021.218f},
+        {962236.045f, 1576203.218f},
     },
-
     { /* sector 1 */
-        {966838.985f, 1595646.181f},
-        {971053.414f, 1594090.738f},
-        {966586.627f, 1591937.925f},
-        {962063.908f, 1587862.742f},
-        {954630.732f, 1582161.556f},
-        {951510.736f, 1583457.953f},
-        {954717.727f, 1576293.878f},
-        {960209.589f, 1566483.569f},
-        {966427.944f, 1551954.369f},
+        {962236.045f, 1576203.218f},
+        {964889.182f, 1574328.456f},
+        {961489.518f, 1577156.079f},
+        {957923.967f, 1581240.444f},
+        {953808.950f, 1582749.181f},
+        {952333.849f, 1583504.472f},
+        {954189.519f, 1580018.856f},
+        {957205.161f, 1574530.217f},
+        {961636.286f, 1565115.789f},
     },
-
     { /* sector 2 */
-        {966427.944f, 1551954.369f},
-        {972130.593f, 1546475.847f},
-        {968980.080f, 1548502.995f},
-        {963582.311f, 1554702.208f},
-        {955948.263f, 1561590.414f},
-        {952241.599f, 1569809.875f},
-        {957502.281f, 1566295.113f},
-        {967686.402f, 1562556.713f},
-        {976117.819f, 1556889.095f},
+        {961636.286f, 1565115.789f},
+        {965527.811f, 1561502.445f},
+        {962899.357f, 1564224.769f},
+        {959243.652f, 1568339.273f},
+        {954084.955f, 1571863.493f},
+        {951438.986f, 1575415.566f},
+        {954568.538f, 1572332.482f},
+        {962732.151f, 1569278.917f},
+        {968314.564f, 1566380.537f},
     },
-
 } };
 
 
@@ -123,7 +122,7 @@ int32_t encoder_get_raw(uint32_t raw[14])
   * @retval -1
   */
 
-int32_t encoder_get_angle(const encoder_cal_t *cal, float *angle, uint8_t *sector, uint32_t *raw_data){
+int32_t encoder_get_angle(const encoder_cal_t *cal, float *fine_angle, float *angle, uint8_t *sector, uint32_t *raw_data){
 
 	float ch_norm[14];
 
@@ -171,19 +170,29 @@ int32_t encoder_get_angle(const encoder_cal_t *cal, float *angle, uint8_t *secto
 	    float sin_norm = (sin1 + sin2 + sin3) / 3.0f; /* do we need to change sign on some entries here? - lets test thr waveform! */
 	    float cos_norm = (cos1 + cos2 + cos3) / 3.0f;
 
-	    float fine_rad_angle = atan2f(sin_norm, cos_norm);
+	    float fine_rad_angle = atan2f(sin_norm, cos_norm); /* fine angle: -π to +π */
 
-	    *angle  = fine_rad_angle;
-
-	    int32_t status = encoder_sector_get(
-	        &encoder_sector_cal_20261027,
+	    status = encoder_sector_get(
+	        &encoder_sector_cal_20261028,
 	        raw_data,
-			fine_rad_angle,              /* Existing fine angle: -pi to +pi */
+			fine_rad_angle,
 	        sector
 	    );
 
+	    /* Map the fine angle and sector information to absolute angle: 0 to 2π */
+	    float abs_rad_angle = (fine_rad_angle + TWO_PI * (float)*sector) * (1.0f / 3.0f);
+
+	    if (abs_rad_angle < 0.0f){
+	    	abs_rad_angle += TWO_PI;
+	    }
+
+	    /* Convert radians to degrees: 0 to 359 degrees */
+	    *angle = abs_rad_angle * (360.0f / TWO_PI);
+	    /* also update the fine angle */
+	    *fine_angle = fine_rad_angle;
 
 	}
+	return status;
 }
 
 

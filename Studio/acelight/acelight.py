@@ -108,6 +108,7 @@ PARAMETERS = {
     "debug":                (0xC2, "U32"),
     "sector":               (0xC3, "U8"),
     "test":                 (0xC4, "U32"),
+    "fine_angle":           (0xC5, "I32"),
 
 
 }

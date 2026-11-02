@@ -15,5 +15,7 @@ void drv8462_init(void);
 void drv8462_set_direction(uint8_t direction_is_forward);
 void drv8462_step_once(uint8_t direction_is_forward);
 void drv8462_step_once_HW(uint8_t direction);
+void drv8462_set_current(uint32_t current_mA);
+void drv8462_set_microstep(uint8_t step_level);
 
 #endif

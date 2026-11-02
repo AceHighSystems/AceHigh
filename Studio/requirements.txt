@@ -2,6 +2,5 @@ fastapi
 uvicorn
 websockets
 numpy
-scipy
 python-can
 pyserial

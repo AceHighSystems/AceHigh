@@ -70,7 +70,7 @@
             <div class="scope-header">
                 <div>
                     <h2>Live scope</h2>
-                    <span class="subtle">Raw encoder channels ch0–ch13</span>
+                    <span class="subtle">Angle · Fine angle · Sector · Raw encoder channels</span>
                 </div>
 
                 <div class="scope-actions">
@@ -100,7 +100,7 @@
                         </svg>
                         <div class="dial-reading"><strong id="angle-value">—</strong><span>DEGREES</span></div>
                     </div>
-                    <div id="angle-source" class="angle-source">Computed from ch0–ch13</div>
+                    <div id="angle-source" class="angle-source">Firmware angle · 0x44 · degrees</div>
                 </section>
 
                 <section class="dashboard-card" id="temperature-card" aria-labelledby="temperature-title">
@@ -126,17 +126,8 @@
                 </section>
             </div>
 
-            <section class="dashboard-card fine-angle-card" id="fineangle-card" aria-labelledby="fineangle-title">
-                <div class="dashboard-card-header">
-                    <h3 id="fineangle-title">Fine angle</h3>
-                    <span class="metric-state" id="fineangle-state">Ready</span>
-                </div>
-                <div class="fine-angle-summary">
-                    <div class="dashboard-reading fine-angle-reading"><strong id="fineangle-value">—</strong><span>rad</span></div>
-                    <span class="subtle">Three cycles per mechanical revolution</span>
-                </div>
-                <div id="fineangle-plot" class="fine-angle-plot" aria-label="Firmware angle parameter in radians versus elapsed seconds"></div>
-            </section>
+            <div id="parameter-scope-grid" class="parameter-scope-grid"
+                 aria-label="Firmware parameters: angle, fine angle and sector"></div>
 
             <div class="raw-scope-label">Raw encoder channels <span>ch0–ch13</span></div>
             <div id="scope-grid" class="scope-grid"></div>

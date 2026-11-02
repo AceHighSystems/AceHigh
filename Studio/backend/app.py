@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 CHANNEL = "/dev/cu.usbmodem2080317458421"
 BITRATE = 1_000_000
 
-# Make AceHigh-gui/ importable so the existing acelight/ folder can be used.
+# Make Studio/ importable so the existing acelight/ folder can be used.
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 
@@ -26,7 +26,6 @@ if str(ROOT) not in sys.path:
 from can_service import CanService
 from telemetry import SIGNALS, TelemetryService
 from metrics import stream_metrics
-from encoder import EncoderEstimator
 
 
 def load_ace_backend():
@@ -42,20 +41,20 @@ def load_ace_backend():
         
         ace.init(bus)
         
-        print("[AceHigh GUI] CAN bus initialized.")
-        print("[AceHigh GUI] AceLight module imported successfully.")
+        print("[AceHigh Studio] CAN bus initialized.")
+        print("[AceHigh Studio] AceLight module imported successfully.")
         return ace
 
     except Exception as exc:
-        print(f"[AceHigh GUI] FAILED to import AceLight and set up CAN: {exc}")
+        print(f"[AceHigh Studio] FAILED to import AceLight and set up CAN: {exc}")
         raise
 
 
 ace_backend = load_ace_backend()
 can_service = CanService(ace_backend)
-telemetry = TelemetryService(can_service, EncoderEstimator())
+telemetry = TelemetryService(can_service)
 
-app = FastAPI(title="AceHigh GUI")
+app = FastAPI(title="AceHigh Studio")
 app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
 
 
@@ -209,7 +208,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
                 await stop_metrics()
                 metrics_task = asyncio.create_task(
-                    stream_metrics(can_service, node, run_id, websocket.send_json, telemetry))
+                    stream_metrics(can_service, node, run_id, websocket.send_json))
                 await websocket.send_json({"type": "metrics_started", "node": node, "run_id": run_id})
 
             elif command_type == "metrics_stop":

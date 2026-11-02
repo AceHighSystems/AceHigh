@@ -34,6 +34,10 @@
 #define PARAM_PROFILE_ACCELERATION    0x46U
 #define PARAM_PROFILE_DECELERATION    0x47U
 #define PARAM_MICROSTEP	  		      0x48U
+#define PARAM_MOTOR_CURRENT			  0x49U
+#define PARAM_MOTOR_CURRENT_MAX		  0x50U
+#define PARAM_MOTOR_CURRENT_MIN		  0x51U
+#define PARAM_MOTOR_FULL_STEP		  0x52U
 
 /* =========================
    Encoder (0x60–0x7F)
@@ -47,17 +51,18 @@
 #define PARAM_TEMPERATURE          	  0x82U
 
 /* =========================
-   Diagnostics (0xC0–0xDF)
+   Diagnostics and calibration (0xC0–0xDF)
    ========================= */
-#define PARAM_LED_PA1          		  0xC0U
-#define PARAM_UPTIME 				  0xC1U
-#define PARAM_DEBUG             	  0xC2U
-#define PARAM_SECTOR             	  0xC3U
-#define PARAM_TEST          		  0xC4U
-
+#define PARAM_CALIBRATION  			  0xC0U
+#define PARAM_LED_PA1          		  0xC1U
+#define PARAM_UPTIME 				  0xC2U
+#define PARAM_DEBUG             	  0xC3U
+#define PARAM_SECTOR             	  0xC4U
+#define PARAM_TEST          		  0xC5U
+#define PARAM_FINE_ANGLE              0xC6U
 
 /* =========================
-   Raw capacitive channels  (0xC0–0xDF)
+   Raw capacitive encoder channels  (0xC0–0xDF)
    ========================= */
 #define PARAM_RAW_CH0       		  0xD0U
 #define PARAM_RAW_CH1      		      0xD1U
@@ -75,7 +80,6 @@
 #define PARAM_RAW_CH12     		      0xDCU
 #define PARAM_RAW_CH13    		      0xDDU
 
-
 /*
  * Ranger runtime parameter storage.
  */
@@ -91,7 +95,6 @@ typedef struct
 	uint32_t  protocol_version;
 
 	/* Ranger system parameters */
-	uint8_t   reset;
 
 	/* Telemetry */
     int32_t   voltage;
@@ -109,13 +112,21 @@ typedef struct
 	uint32_t  profile_acceleration;
 	uint32_t  profile_deceleration;
     uint32_t  microstep;
+    uint32_t  motor_current;
+    uint32_t  motor_current_max;
+    uint32_t  motor_current_min;
+    uint32_t  motor_full_step;
+
 
     /* Diagnostics */
+    uint8_t   calibration;
 	uint8_t   led1;
-    uint32_t  uptime_s;
-    uint32_t  debug;
-    uint8_t   sector;
+    uint32_t  uptime;
+    uint8_t   reset;
     uint32_t  test;
+    int32_t   debug;
+    uint8_t   sector;
+    int32_t   fine_angle;
 
     /* Encoder raw channels - prototyping */
     uint32_t  ch0;

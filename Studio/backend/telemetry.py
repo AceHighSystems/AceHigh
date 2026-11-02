@@ -13,16 +13,6 @@ class SignalDefinition:
     capacity: int = 30_384
 
 
-@dataclass(frozen=True)
-class AngleSample:
-    sequence: int
-    completed_at: float
-    scan_duration_s: float
-    degrees: float | None = None
-    fit_error: float | None = None
-    error: str | None = None
-
-
 # Raw Ranger encoder channels.
 #
 # AceLight API:
@@ -54,11 +44,8 @@ class TelemetryService:
     Raw encoder values are preserved as uint32 end-to-end.
     """
 
-    def __init__(self, can_service: CanService, angle_estimator=None):
+    def __init__(self, can_service: CanService):
         self.can = can_service
-        self.angle_estimator = angle_estimator
-        self.latest_angles: dict[int, AngleSample] = {}
-        self._angle_sequences: dict[int, int] = {}
 
         self.buffers = {
             name: UInt32RingBuffer(definition.capacity)
@@ -131,7 +118,6 @@ class TelemetryService:
         # No remaining signals for this node.
         self._active_signals.pop(node_id, None)
         self._scan_rates.pop(node_id, None)
-        self.latest_angles.pop(node_id, None)
 
         task = self._scan_tasks.pop(node_id, None)
 
@@ -156,10 +142,7 @@ class TelemetryService:
                 if not active:
                     return
 
-                # Each pass builds a new vector; never reuse a failed channel
-                # from an older pass. Completed scans are still sequential CAN
-                # reads, not simultaneous PCAP02 conversion snapshots.
-                scan = {}
+                # Sequential CAN reads; failed reads do not append samples.
                 # SIGNALS preserves insertion order: ch0, ch1, ... ch13.
                 for signal in SIGNALS:
 
@@ -174,7 +157,6 @@ class TelemetryService:
 
                         if status == 2 and value is not None and 0 <= value <= 0xFFFFFF:
                             self.buffers[signal].append(value)
-                            scan[signal] = int(value)
 
                     except asyncio.CancelledError:
                         raise
@@ -184,9 +166,6 @@ class TelemetryService:
                         # the complete encoder acquisition task.
                         pass
 
-                completed = loop.time()
-                if set(SIGNALS).issubset(active):
-                    self._publish_angle(node_id, scan, scan_started, completed)
                 scan_elapsed = loop.time() - scan_started
 
                 rate_hz = self._scan_rates.get(
@@ -202,23 +181,6 @@ class TelemetryService:
 
         except asyncio.CancelledError:
             raise
-
-    def _publish_angle(self, node_id, scan, started, completed):
-        sequence = self._angle_sequences.get(node_id, 0) + 1
-        self._angle_sequences[node_id] = sequence
-        metadata = {"sequence": sequence, "completed_at": completed,
-                    "scan_duration_s": completed - started}
-        try:
-            if len(scan) != 14:
-                missing = ", ".join(signal for signal in SIGNALS if signal not in scan)
-                raise ValueError(f"Incomplete encoder scan: {missing}")
-            if self.angle_estimator is None:
-                raise ValueError("Encoder calibration is not loaded.")
-            estimate = self.angle_estimator.estimate([scan[signal] for signal in SIGNALS])
-            self.latest_angles[node_id] = AngleSample(
-                **metadata, degrees=estimate.degrees, fit_error=estimate.fit_error)
-        except Exception as exc:
-            self.latest_angles[node_id] = AngleSample(**metadata, error=str(exc))
 
     def read_since(
         self,

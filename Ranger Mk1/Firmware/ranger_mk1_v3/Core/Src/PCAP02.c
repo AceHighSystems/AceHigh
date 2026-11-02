@@ -112,53 +112,53 @@ int32_t pcap_init(int8_t pcap_nbr)
      * Registers 0..76.
      * Unspecified entries are zero.
      */
-    static const uint8_t cfg[77] = {
-        [0]  = 0xFF,  // Disable OTP autoboot; allow SRAM readback
-        [1]  = 0x00,  // OTP ECC disabled
-        [2]  = 0x41,  // SPI collision avoidance; SRAM/OTP compare off
+	static const uint8_t cfg[77] = {
+	        [0]  = 0xFF,  // Disable OTP autoboot; allow SRAM readback
+	        [1]  = 0x00,  // OTP ECC disabled
+	        [2]  = 0x41,  // SPI collision avoidance; SRAM/OTP compare off
 
-        [3]  = 0x94,  // Internal low-frequency oscillator
-        [4]  = 0x80,  // External oscillator disabled
-        [5]  = 0x05,
-        [6]  = 0x01,  // Internal high-frequency clock
-        [7]  = 0x14,  // Ordinary capacitors; sense inversion enabled
-        [8]  = 0xA8,  // Internal 30 kohm discharge resistors
-        [9]  = 0x00,
-        [10] = 0x10,  // Grounded, external reference, internal compensation
-        [11] = 0x00,  // CDC cycle clock = internal low-frequency clock
+	        [3]  = 0x94,  // Internal low-frequency oscillator
+	        [4]  = 0x80,  // External oscillator disabled
+	        [5]  = 0x05,
+	        [6]  = 0x01,  // Internal high-frequency clock
+	        [7]  = 0x14,  // Ordinary capacitors; sense inversion enabled
+	        [8]  = 0xA8,  // Internal 30 kohm discharge resistors
+	        [9]  = 0x00,
+	        [10] = 0x10,  // Grounded, external reference, internal compensation
+	        [11] = 0x00,  // CDC cycle clock = internal low-frequency clock
 
-		[12] = 0xFF,  // Enable PC0 reference + PC1 + PC2
-		[13] = 0x40,  // Average 64 measurements
-        [14] = 0x00,
+			[12] = 0xFF,  // Enable PC0 reference + PC1 + PC2
+			[13] = 0x40,  // Average 64 measurements
+	        [14] = 0x00,
 
-        [17] = 0xC4,  // Conversion timer = 2500 = 0x0009C4
-        [18] = 0x09,  // Approximately 100 ms with 50 kHz OLF
-        [19] = 0x00,
+	        [17] = 0xC4,  // Conversion timer = 2500 = 0x0009C4
+	        [18] = 0x09,  // Approximately 100 ms with 50 kHz OLF
+	        [19] = 0x00,
 
-        [23] = 0x02,  // Discharge interval
-        [24] = 0x08,  // CDC triggered by conversion timer
-        [25] = 0x01,  // Precharge interval
-        [26] = 0x00,
-        [27] = 0x02,  // Full-charge interval
-        [28] = 0x20,  // EEPROM disabled; writes disabled
+	        [23] = 0x02,  // Discharge interval
+	        [24] = 0x08,  // CDC triggered by conversion timer
+	        [25] = 0x01,  // Precharge interval
+	        [26] = 0x00,
+	        [27] = 0x02,  // Full-charge interval
+	        [28] = 0x20,  // EEPROM disabled; writes disabled
 
-        [29] = 0x00,  // Temperature conversion trigger disabled
-        [30] = 0x01,
-        [34] = 0x00,  // Temperature ports disabled
-        [35] = 0x05,
+	        [29] = 0x00,  // Temperature conversion trigger disabled
+	        [30] = 0x01,
+	        [34] = 0x00,  // Temperature ports disabled
+	        [35] = 0x05,
 
-        [38] = 0x50,  // Vendor standard TDC setting
-        [40] = 0x00,  // DSP uses internal ring oscillator
-        [41] = 0x00,  // Watchdog disabled for bring-up
-        [43] = 0x41,  // Execute SRAM; trigger DSP at end of CDC
-        [45] = 0x00,  // PWM/PDM outputs disabled
-        [46] = 0xFF,  // Vendor standard GPIO setting
-        [48] = 0x27,  // Vendor standard TDC/bandgap settings
-        [49] = 0x30,
+	        [38] = 0x50,  // Vendor standard TDC setting
+	        [40] = 0x00,  // DSP uses internal ring oscillator
+	        [41] = 0x00,  // Watchdog disabled for bring-up
+	        [43] = 0x41,  // Execute SRAM; trigger DSP at end of CDC
+	        [45] = 0x00,  // PWM/PDM outputs disabled
+	        [46] = 0xFF,  // Vendor standard GPIO setting
+	        [48] = 0x27,  // Vendor standard TDC/bandgap settings
+	        [49] = 0x30,
 
-        [73] = 0x28,  // PARA7: vendor standard gain compensation
-        [74] = 0x01   // PARA8: vendor standard bandgap trigger flag
-    };
+	        [73] = 0x28,  // PARA7: vendor standard gain compensation
+	        [74] = 0x01   // PARA8: vendor standard bandgap trigger flag
+	    };
 
     uint8_t tx[79] = {0};
     uint8_t rx[79] = {0};
