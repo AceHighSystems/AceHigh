@@ -6,3 +6,6 @@ from dataclasses import dataclass
 class Parameter:
     id: int
     data_type: str
+    description: str
+    unit: str
+    access: str 

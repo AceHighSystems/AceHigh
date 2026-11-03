@@ -28,6 +28,7 @@ ranger_param_t g_param =
     .step_move       = 0U,
     .target_position = 0U,
     .microstep       = 1U,
+	.motor_current   = 50U,
     .led1            = 1U,
 	.debug		     = 1U,
 	.fine_angle		 = 0U

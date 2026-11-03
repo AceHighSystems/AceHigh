@@ -78,6 +78,8 @@ PARAMETERS = {
     "profile_acceleration": (0x46, "U32"),
     "profile_deceleration": (0x47, "U32"),
     "microstep":            (0x48, "U32"),
+    "motor_current":        (0x49, "U32"),
+
 
     "voltage":              (0x80, "I32"),
     "current":              (0x81, "I32"),
