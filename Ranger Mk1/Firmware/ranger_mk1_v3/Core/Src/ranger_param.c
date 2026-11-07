@@ -61,6 +61,7 @@ const ace_parameter_t ranger_param_table[] =
 	{ ACE_PARAM_PROTOCOL_VERSION,  &g_param.protocol_version,      ACE_PARAM_U32, ACE_PARAM_RO },
 
 	/* Device specific parameters - Ranger Mk1 */
+	{ PARAM_RESET,		     	   &g_param.reset,         		   ACE_PARAM_U8,  ACE_PARAM_RW },
 
     { PARAM_MODE,     	           &g_param.mode,                  ACE_PARAM_U8,  ACE_PARAM_RW },
 	{ PARAM_STEP_MOVE,       	   &g_param.step_move,             ACE_PARAM_I32, ACE_PARAM_RW },
@@ -85,9 +86,8 @@ const ace_parameter_t ranger_param_table[] =
 	{ PARAM_CALIBRATION,		   &g_param.calibration,           ACE_PARAM_U8,  ACE_PARAM_RW },
     { PARAM_LED_PA1,		 	   &g_param.led1,         		   ACE_PARAM_U8,  ACE_PARAM_RW },
 	{ PARAM_UPTIME,		 	       &g_param.uptime,         	   ACE_PARAM_U32, ACE_PARAM_RW },
-	{ PARAM_RESET,		     	   &g_param.reset,         		   ACE_PARAM_U8,  ACE_PARAM_RW },
-	{ PARAM_TEST,		     	   &g_param.test,         		   ACE_PARAM_U32, ACE_PARAM_RW },
 	{ PARAM_DEBUG,		  	       &g_param.debug,                 ACE_PARAM_I32, ACE_PARAM_RO },
+	{ PARAM_TEST,		     	   &g_param.test,         		   ACE_PARAM_U32, ACE_PARAM_RW },
 	{ PARAM_SECTOR,		  	       &g_param.sector,                ACE_PARAM_U8,  ACE_PARAM_RO },
 	{ PARAM_FINE_ANGLE,		  	   &g_param.fine_angle,            ACE_PARAM_I32, ACE_PARAM_RO },
 

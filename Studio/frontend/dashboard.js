@@ -37,7 +37,7 @@
         if (lastWrapped === null) needleRotation = degrees;
         else needleRotation += ((degrees - lastWrapped + 540) % 360) - 180;
         lastWrapped = degrees;
-        element("angle-needle").style.transform = `rotate(${needleRotation}deg)`;
+        element("angle-needle").style.transform = `rotate(${-needleRotation}deg)`;
         const dial = element("angle-dial");
         dial.dataset.hasValue = "true";
         dial.dataset.angle = String(degrees);

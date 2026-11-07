@@ -40,6 +40,8 @@ The existing temperature and voltage/current dashboard panels remain. Their conv
 
 ## Run, Stop and export
 
+The dashboard toolbar also includes **Run Calibration** and **Firmware Update** beside Run, Stop and Export CSV. These two buttons are UI placeholders: clicking either displays a status message that its workflow is not configured yet. Calibration and firmware-update routines still need to be connected.
+
 **Run** starts all plots and the dashboard. Each new Run clears the traces, sample indices and CSV history. **Stop** pauses updates and leaves the recorded data available for export. Node selection is locked during acquisition. Terminal commands remain available during a run.
 
 Each firmware plot retains up to 300 seconds / 15,000 points. Parameter plot time axes use CAN-read completion time relative to the start of the run. Raw plots retain their sample-index axes and 15,000-point history. The parameter cards distinguish Waiting, Live, Stale, Unavailable, Paused and Disconnected.

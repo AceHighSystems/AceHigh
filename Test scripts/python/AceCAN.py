@@ -199,8 +199,10 @@ def plot_raw_single(bus):
     channels = [
         ("ch0", "Channel 0", "#FF70C8"),
         ("ch7", "Channel 7", "#FF70C8"),
-        ("sector", "Sector", "#B7FF00"),
+        
         ("angle", "Angle", "#3EBBFF"),
+        ("fine_angle", "Angle", "#3EBBFF"),
+        ("sector", "Sector", "#3EBBFF"),
     ]
 
     # Retain QApplication so the plot can be reopened.

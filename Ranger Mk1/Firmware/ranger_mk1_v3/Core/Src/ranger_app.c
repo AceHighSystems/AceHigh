@@ -78,6 +78,8 @@ static const encoder_cal_t encoder_cal =
 };
 
 
+
+
 /* =========================
    Internal helpers
    ========================= */
@@ -177,7 +179,7 @@ void ranger_app_tick(void)
   ranger_app_check_motor_parameters(); /* check to se if motor parameters were updated, update driver accordingly. */
 
   /* Tasks scheduled to run every x miliseconds */
-  if ((now - last_slow_sens_ms) >=250U)
+  if ((now - last_slow_sens_ms) >=100U)
   {
       last_slow_sens_ms = now;
 
@@ -187,16 +189,50 @@ void ranger_app_tick(void)
   }
 
   /* Tasks scheduled to run every x miliseconds */
-  if ((now - last_sens_ms) >=2U)
+  if ((now - last_sens_ms) >=1U)
   {
       last_sens_ms = now;
 
+      float TWO_PII = 6.28318530718f;
       float fine_angle;
       float angle;
       uint8_t angle_sector;
       uint32_t raw_data[14];
 
-      int32_t status = encoder_get_angle(&encoder_cal, &fine_angle, &angle, &angle_sector, raw_data);
+      float sin_sum = 0.0f;
+      float cos_sum = 0.0f;
+
+      const uint8_t samples = 32;
+      int32_t status = 0;
+
+      for (uint8_t i = 0; i < samples; ++i) {
+
+          status = encoder_get_angle(
+              &encoder_cal, &fine_angle, &angle, &angle_sector, raw_data
+          );
+
+          if (status != 0) {
+              break;
+          }
+
+          float radians = angle * (TWO_PII / 360.0f);
+
+          sin_sum += sinf(radians);
+          cos_sum += cosf(radians);
+      }
+
+      if (status == 0) {
+
+          angle = atan2f(sin_sum, cos_sum) * (360.0f / TWO_PII);
+
+          if (angle < 0.0f) {
+              angle += 360.0f;
+          }
+
+          /* Use averaged angle here. */
+      }
+
+
 
       g_param.debug = status;
       g_param.fine_angle = (int32_t)lroundf(fine_angle * 1000000.0f);

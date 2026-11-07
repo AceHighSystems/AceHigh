@@ -50,7 +50,7 @@
 
     exportButton.disabled = true;
 
-    actions.appendChild(exportButton);
+    actions.insertBefore(exportButton, document.getElementById("run-calibration"));
 
     function capture(signal, samples, plottedValue = null, unit = "count") {
         const buffer = buffers.get(signal);

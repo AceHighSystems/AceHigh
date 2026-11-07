@@ -34,6 +34,14 @@
         const connectionDot = document.getElementById("connection-dot");
         const connectionText = document.getElementById("connection-text");
 
+        // UI placeholders until calibration and firmware-update workflows are added.
+        for (const id of ["run-calibration", "firmware-update"]) {
+            const button = document.getElementById(id);
+            button.addEventListener("click", () => {
+                statusLine.textContent = button.title;
+            });
+        }
+
         const protocol = location.protocol === "https:" ? "wss" : "ws";
         const ws = new WebSocket(`${protocol}://${location.host}/ws`);
 

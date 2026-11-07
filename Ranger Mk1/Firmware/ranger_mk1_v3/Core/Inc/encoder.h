@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 
+
 /**
  * @brief Per-channel calibration limits used for encoder normalization.
  * @note Each ch_max[i] must be greater than ch_min[i].

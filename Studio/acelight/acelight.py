@@ -69,6 +69,9 @@ PARAMETERS = {
     "boot_counter":         (0x08, "U32"),
 
     # Ranger specific parameters
+    "reset":                (0x10, "U8"),
+
+    # Motion and Motor parameters
     "mode":                 (0x40, "U8"),
     "step_move":            (0x41, "I32"),
     "target_position":      (0x42, "I32"),
@@ -80,14 +83,19 @@ PARAMETERS = {
     "microstep":            (0x48, "U32"),
     "motor_current":        (0x49, "U32"),
 
-
+     # Telemetry
     "voltage":              (0x80, "I32"),
     "current":              (0x81, "I32"),
     "temperature":          (0x82, "I32"),
 
-    "led":                  (0xC0, "U8"),
-    "test":                 (0xC1, "U32"),
-    "error_flag":           (0xC2, "U32"),
+    # Diagnostics
+    "calibration":          (0xC0, "U8"),
+    "led1":                 (0xC1, "U8"),
+    "uptime":               (0xC2, "U32"),
+    "debug":                (0xC3, "I32"),
+    "test":                 (0xC4, "U32"),
+    "sector":               (0xC5, "U8"),
+    "fine_angle":           (0xC6, "I32"),
 
     "ch0":                  (0xD0, "U32"),
     "ch1":                  (0xD1, "U32"),
@@ -103,16 +111,6 @@ PARAMETERS = {
     "ch11":                 (0xDB, "U32"),
     "ch12":                 (0xDC, "U32"),
     "ch13":                 (0xDD, "U32"),
-
-    # Diagnostics
-    "led1":                 (0xC0, "U32"),
-    "uptime_s":             (0xC1, "U32"),
-    "debug":                (0xC2, "U32"),
-    "sector":               (0xC3, "U8"),
-    "test":                 (0xC4, "U32"),
-    "fine_angle":           (0xC5, "I32"),
-
-
 }
 
 # ============================================================

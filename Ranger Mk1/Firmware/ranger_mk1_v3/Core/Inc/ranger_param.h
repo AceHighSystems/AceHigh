@@ -57,8 +57,8 @@
 #define PARAM_LED_PA1          		  0xC1U
 #define PARAM_UPTIME 				  0xC2U
 #define PARAM_DEBUG             	  0xC3U
-#define PARAM_SECTOR             	  0xC4U
-#define PARAM_TEST          		  0xC5U
+#define PARAM_TEST          		  0xC4U
+#define PARAM_SECTOR             	  0xC5U
 #define PARAM_FINE_ANGLE              0xC6U
 
 /* =========================
@@ -95,6 +95,7 @@ typedef struct
 	uint32_t  protocol_version;
 
 	/* Ranger system parameters */
+	uint8_t   reset;
 
 	/* Telemetry */
     int32_t   voltage;
@@ -122,9 +123,8 @@ typedef struct
     uint8_t   calibration;
 	uint8_t   led1;
     uint32_t  uptime;
-    uint8_t   reset;
-    uint32_t  test;
     int32_t   debug;
+    uint32_t  test;
     uint8_t   sector;
     int32_t   fine_angle;
 
