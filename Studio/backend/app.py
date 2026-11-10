@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 CHANNEL = "/dev/cu.usbmodem2080317458421"
 BITRATE = 1_000_000
 
+
 # Make Studio/ importable so the existing acelight/ folder can be used.
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
